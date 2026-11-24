@@ -1,0 +1,82 @@
+[
+  {
+    "task_id": "test-inventory-executor-ru-ecom-ops-20261120",
+    "action_type": "inventory_update",
+    "platform": "WB_CN",
+    "content_hash": "05adc14bd11e112a285dc1365e58e386a0b20ba6965f7134e1d4959636aa9425",
+    "approved_at": "2026-11-20T06:05:54.104043+00:00",
+    "confirmed_at": "2026-11-20T06:34:36.430854+00:00",
+    "expires_at": "2026-11-20T18:05:54.103849+00:00",
+    "status": "confirmed"
+  },
+  {
+    "task_id": "test-inventory-executor-ru-ecom-ops-20261120",
+    "action_type": "inventory_update",
+    "platform": "WB_CN",
+    "content_hash": "05adc14bd11e112a285dc1365e58e386a0b20ba6965f7134e1d4959636aa9425",
+    "approved_at": "2026-11-20T06:08:26.786259+00:00",
+    "confirmed_at": null,
+    "expires_at": "2026-11-20T18:08:26.785884+00:00",
+    "status": "awaiting_confirmation"
+  },
+  {
+    "task_id": "test-inventory-executor-ru-ecom-ops-20261120",
+    "action_type": "inventory_update",
+    "platform": "WB_CN",
+    "content_hash": "05adc14bd11e112a285dc1365e58e386a0b20ba6965f7134e1d4959636aa9425",
+    "approved_at": "2026-11-20T06:30:40.498798+00:00",
+    "confirmed_at": null,
+    "expires_at": "2026-11-20T18:30:40.498298+00:00",
+    "status": "awaiting_confirmation"
+  },
+  {
+    "task_id": "test-inventory-executor-ru-ecom-ops-20261120",
+    "action_type": "inventory_update",
+    "platform": "WB_CN",
+    "content_hash": "05adc14bd11e112a285dc1365e58e386a0b20ba6965f7134e1d4959636aa9425",
+    "approved_at": "2026-11-20T06:30:51.891866+00:00",
+    "confirmed_at": null,
+    "expires_at": "2026-11-20T18:30:51.891381+00:00",
+    "status": "awaiting_confirmation"
+  },
+  {
+    "task_id": "test-inventory-executor-ru-ecom-ops-20261120",
+    "action_type": "inventory_update",
+    "platform": "WB_CN",
+    "content_hash": "05adc14bd11e112a285dc1365e58e386a0b20ba6965f7134e1d4959636aa9425",
+    "approved_at": "2026-11-20T06:34:36.430709+00:00",
+    "confirmed_at": null,
+    "expires_at": "2026-11-20T18:34:36.430342+00:00",
+    "status": "awaiting_confirmation"
+  },
+  {
+    "task_id": "test-listing-executor-phase4-ru-ecom-ops-20261120",
+    "action_type": "listing_update",
+    "platform": "Ozon RU",
+    "content_hash": "48867f7ed9457e6b99ef4c47b8100405f38d0669eadff19d2376ca82c6060843",
+    "approved_at": "2026-11-20T07:01:01.797432+00:00",
+    "confirmed_at": "2026-11-20T07:01:01.797558+00:00",
+    "expires_at": "2026-11-20T19:01:01.797225+00:00",
+    "status": "confirmed"
+  },
+  {
+    "task_id": "test-pricing-phase5-wb-cn-20261120",
+    "action_type": "pricing_update",
+    "platform": "WB_CN",
+    "content_hash": "1d53e05ea5254a57cf0d6a90b5cc7c73a3adc41b63be81ae581d3708fb429be2",
+    "approved_at": "2026-11-20T07:14:52.035910+00:00",
+    "confirmed_at": "2026-11-20T07:14:52.036016+00:00",
+    "expires_at": "2026-11-20T19:14:52.035816+00:00",
+    "status": "confirmed"
+  },
+  {
+    "task_id": "test-purchase-order-phase5-wb-cn-20261120",
+    "action_type": "purchase_order",
+    "platform": "WB_CN",
+    "content_hash": "1debdd1fc1444e7891a33f1742cdb4ab42491493a54d99504c274bda3db312e6",
+    "approved_at": "2026-11-20T07:14:52.094349+00:00",
+    "confirmed_at": "2026-11-20T07:14:52.094444+00:00",
+    "expires_at": "2026-11-21T07:14:52.094312+00:00",
+    "status": "confirmed"
+  }
+]

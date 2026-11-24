@@ -1,0 +1,385 @@
+---
+# Internal Service for service discovery and load balancing
+apiVersion: v1
+kind: Service
+metadata:
+  name: ru-ecom-ops-app
+  namespace: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    component: app
+    environment: production
+  annotations:
+    description: "Internal service for ru-ecom-ops application"
+    version: "1.0.0"
+
+spec:
+  type: ClusterIP
+
+  # Internal cluster DNS: ru-ecom-ops-app.ru-ecom-ops.svc.cluster.local
+  clusterIP: None  # Headless service for direct pod access, or omit for load-balanced
+
+  selector:
+    app: ru-ecom-ops
+    component: app
+
+  ports:
+    - name: http
+      protocol: TCP
+      port: 5000
+      targetPort: http
+
+  # Session affinity (optional)
+  sessionAffinity: None
+  # sessionAffinity: ClientIP
+  # sessionAffinityConfig:
+  #   clientIP:
+  #     timeoutSeconds: 10800
+
+  # Traffic policy
+  trafficPolicy: Cluster
+
+  # IP families
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+
+  # Publish not ready addresses for headless service
+  publishNotReadyAddresses: false
+
+---
+# LoadBalancer Service for external access (optional)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ru-ecom-ops-lb
+  namespace: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    component: app
+    type: loadbalancer
+    environment: production
+  annotations:
+    description: "External LoadBalancer service for ru-ecom-ops"
+    version: "1.0.0"
+    # Cloud provider specific annotations (uncomment as needed)
+    # AWS:
+    # service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    # service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+    # service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+
+    # GCP:
+    # cloud.google.com/load-balancer-type: "Internal"
+
+    # Azure:
+    # service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+
+spec:
+  type: LoadBalancer
+
+  selector:
+    app: ru-ecom-ops
+    component: app
+
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 5000
+      nodePort: 30000
+
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 5000
+      nodePort: 30001
+
+  # Session affinity for persistent connections
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+  # Health check configuration
+  healthCheckNodePort: 0  # Auto-assign
+
+  # External IP policy
+  externalTrafficPolicy: Local  # Or Cluster
+
+  # Optional: Restrict source IPs
+  # loadBalancerSourceRanges:
+  #   - "0.0.0.0/0"  # Allow from anywhere (not recommended for production)
+  #   - "203.0.113.0/24"  # Allow from specific CIDR
+
+  # Optional: Assign specific external IPs
+  # externalIPs:
+  #   - "203.0.113.100"
+
+---
+# Ingress for HTTP/HTTPS routing (alternative to LoadBalancer)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ru-ecom-ops-ingress
+  namespace: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    component: ingress
+    environment: production
+  annotations:
+    description: "Ingress for ru-ecom-ops application with TLS termination"
+    version: "1.0.0"
+
+    # Nginx ingress controller annotations
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "10"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+
+    # CORS configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+
+    # Cert-manager annotations (if using cert-manager for TLS)
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # cert-manager.io/acme-challenge-type: http01
+
+spec:
+  ingressClassName: nginx
+
+  # TLS configuration
+  tls:
+    - hosts:
+        - ecom-ops.example.com
+        - api.ecom-ops.example.com
+      secretName: ru-ecom-ops-tls
+      # Alternate: Use cert-manager
+      # secretName: ru-ecom-ops-tls-cert-manager
+
+  # Routing rules
+  rules:
+    - host: ecom-ops.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ru-ecom-ops-app
+                port:
+                  number: 5000
+
+          - path: /health
+            pathType: Exact
+            backend:
+              service:
+                name: ru-ecom-ops-app
+                port:
+                  number: 5000
+
+          - path: /metrics
+            pathType: Exact
+            backend:
+              service:
+                name: ru-ecom-ops-app
+                port:
+                  number: 5000
+
+    - host: api.ecom-ops.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ru-ecom-ops-app
+                port:
+                  number: 5000
+
+---
+# Network Policy for security (restrict pod-to-pod communication)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ru-ecom-ops-network-policy
+  namespace: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    component: network
+    environment: production
+  annotations:
+    description: "Network policy to restrict traffic to ru-ecom-ops pods"
+    version: "1.0.0"
+
+spec:
+  podSelector:
+    matchLabels:
+      app: ru-ecom-ops
+      component: app
+
+  # Allow ingress from:
+  # 1. Ingress controller
+  # 2. Prometheus monitoring
+  # 3. Other pods in same namespace
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow from ingress controller (adjust label as needed)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 5000
+
+    # Allow from prometheus in same namespace
+    - from:
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 5000
+
+    # Allow from pods in same namespace
+    - from:
+        - podSelector:
+            matchLabels:
+              app: ru-ecom-ops
+      ports:
+        - protocol: TCP
+          port: 5000
+
+  # Allow egress to:
+  # 1. DNS
+  # 2. External services (APIs, SMTP, Slack)
+  # 3. Pods in same namespace
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow to pods in same namespace
+    - to:
+        - podSelector:
+            matchLabels:
+              app: ru-ecom-ops
+      ports:
+        - protocol: TCP
+          port: 5000
+
+    # Allow external HTTPS (Slack, SMTP, APIs)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 587  # SMTP
+        - protocol: TCP
+          port: 25   # SMTP
+        - protocol: TCP
+          port: 465  # SMTP TLS
+
+---
+# Service Account for RBAC
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ru-ecom-ops-app
+  namespace: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    component: app
+    environment: production
+  annotations:
+    description: "Service account for ru-ecom-ops application pods"
+    version: "1.0.0"
+
+automountServiceAccountToken: true
+
+---
+# Role for service account permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ru-ecom-ops-app-role
+  namespace: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    component: rbac
+    environment: production
+  annotations:
+    description: "Role with minimal permissions for ru-ecom-ops pods"
+    version: "1.0.0"
+
+rules:
+  # Read ConfigMaps in same namespace
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+
+  # Read Secrets in same namespace
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+
+  # Read pods for service discovery
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+
+  # Read services
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch"]
+
+  # Read events (for logging)
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+---
+# RoleBinding to bind role to service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ru-ecom-ops-app-rolebinding
+  namespace: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    component: rbac
+    environment: production
+  annotations:
+    description: "Role binding for ru-ecom-ops application service account"
+    version: "1.0.0"
+
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ru-ecom-ops-app-role
+
+subjects:
+  - kind: ServiceAccount
+    name: ru-ecom-ops-app
+    namespace: ru-ecom-ops

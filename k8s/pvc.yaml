@@ -1,0 +1,295 @@
+---
+# PersistentVolume for application data (SQLite database)
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ru-ecom-ops-data-pv
+  labels:
+    app: ru-ecom-ops
+    component: storage
+    type: data
+    environment: production
+  annotations:
+    description: "Persistent volume for application data (SQLite database)"
+    version: "1.0.0"
+
+spec:
+  capacity:
+    storage: 10Gi
+
+  accessModes:
+    - ReadWriteOnce
+
+  persistentVolumeReclaimPolicy: Retain
+
+  # Storage class for dynamic provisioning
+  storageClassName: ru-ecom-ops-storage
+
+  # Local storage backend (for single-node or on-premises deployments)
+  local:
+    path: /mnt/data/ru-ecom-ops
+
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - node-1  # Replace with actual node name or use topology spread
+
+---
+# PersistentVolume for application logs
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ru-ecom-ops-logs-pv
+  labels:
+    app: ru-ecom-ops
+    component: storage
+    type: logs
+    environment: production
+  annotations:
+    description: "Persistent volume for application logs"
+    version: "1.0.0"
+
+spec:
+  capacity:
+    storage: 20Gi
+
+  accessModes:
+    - ReadWriteOnce
+
+  persistentVolumeReclaimPolicy: Retain
+
+  storageClassName: ru-ecom-ops-storage
+
+  local:
+    path: /mnt/logs/ru-ecom-ops
+
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - node-1
+
+---
+# PersistentVolume for database backups
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ru-ecom-ops-backups-pv
+  labels:
+    app: ru-ecom-ops
+    component: storage
+    type: backups
+    environment: production
+  annotations:
+    description: "Persistent volume for database backups with 7-day retention"
+    version: "1.0.0"
+
+spec:
+  capacity:
+    storage: 50Gi
+
+  accessModes:
+    - ReadWriteOnce
+
+  persistentVolumeReclaimPolicy: Retain
+
+  storageClassName: ru-ecom-ops-storage
+
+  local:
+    path: /mnt/backups/ru-ecom-ops
+
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - node-1
+
+---
+# StorageClass for dynamic provisioning
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ru-ecom-ops-storage
+  labels:
+    app: ru-ecom-ops
+    component: storage
+    environment: production
+  annotations:
+    description: "Storage class for ru-ecom-ops persistent storage"
+    version: "1.0.0"
+
+provisioner: kubernetes.io/local
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+
+parameters:
+  # For local storage, no additional parameters needed
+  # For cloud providers, replace provisioner and parameters:
+  #
+  # AWS EBS:
+  # provisioner: ebs.csi.aws.com
+  # parameters:
+  #   type: gp3
+  #   iops: "3000"
+  #   throughput: "125"
+  #   encrypted: "true"
+  #   kms_key_id: arn:aws:kms:...
+  #
+  # GCP GKE:
+  # provisioner: pd.csi.storage.gke.io
+  # parameters:
+  #   type: pd-ssd
+  #   replication-type: regional-pd
+  #
+  # Azure:
+  # provisioner: disk.csi.azure.com
+  # parameters:
+  #   skuName: Premium_LRS
+  #   cachingMode: ReadWrite
+
+---
+# PersistentVolumeClaim for application data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ru-ecom-ops-data-pvc
+  namespace: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    component: storage
+    type: data
+    environment: production
+  annotations:
+    description: "PVC for application data (SQLite database at /app/data)"
+    version: "1.0.0"
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+
+  storageClassName: ru-ecom-ops-storage
+
+  resources:
+    requests:
+      storage: 10Gi
+
+  selector:
+    matchLabels:
+      app: ru-ecom-ops
+      component: storage
+      type: data
+
+---
+# PersistentVolumeClaim for application logs
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ru-ecom-ops-logs-pvc
+  namespace: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    component: storage
+    type: logs
+    environment: production
+  annotations:
+    description: "PVC for application logs mounted at /app/logs"
+    version: "1.0.0"
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+
+  storageClassName: ru-ecom-ops-storage
+
+  resources:
+    requests:
+      storage: 20Gi
+
+  selector:
+    matchLabels:
+      app: ru-ecom-ops
+      component: storage
+      type: logs
+
+---
+# PersistentVolumeClaim for database backups
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ru-ecom-ops-backups-pvc
+  namespace: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    component: storage
+    type: backups
+    environment: production
+  annotations:
+    description: "PVC for database backups mounted at /backups (7-day retention)"
+    version: "1.0.0"
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+
+  storageClassName: ru-ecom-ops-storage
+
+  resources:
+    requests:
+      storage: 50Gi
+
+  selector:
+    matchLabels:
+      app: ru-ecom-ops
+      component: storage
+      type: backups
+
+---
+# Example cloud provider configurations (commented out for reference)
+#
+# For AWS EBS with dynamic provisioning:
+# apiVersion: storage.k8s.io/v1
+# kind: StorageClass
+# metadata:
+#   name: ru-ecom-ops-storage-aws
+# provisioner: ebs.csi.aws.com
+# parameters:
+#   type: gp3
+#   iops: "3000"
+#   throughput: "125"
+#   encrypted: "true"
+# allowVolumeExpansion: true
+# volumeBindingMode: WaitForFirstConsumer
+#
+# For GCP with Persistent Disks:
+# apiVersion: storage.k8s.io/v1
+# kind: StorageClass
+# metadata:
+#   name: ru-ecom-ops-storage-gcp
+# provisioner: pd.csi.storage.gke.io
+# parameters:
+#   type: pd-ssd
+#   replication-type: regional-pd
+# allowVolumeExpansion: true
+# volumeBindingMode: WaitForFirstConsumer
+#
+# For Azure with Managed Disks:
+# apiVersion: storage.k8s.io/v1
+# kind: StorageClass
+# metadata:
+#   name: ru-ecom-ops-storage-azure
+# provisioner: disk.csi.azure.com
+# parameters:
+#   skuName: Premium_LRS
+#   cachingMode: ReadWrite
+# allowVolumeExpansion: true
+# volumeBindingMode: WaitForFirstConsumer

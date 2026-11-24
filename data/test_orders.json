@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-11-24T03:55:39.176543+00:00",
+  "total_orders": 102,
+  "distribution": {
+    "confirmed": 60,
+    "pending_payment": 15,
+    "paid_delayed": 16,
+    "shipped_missing": 11
+  }
+}

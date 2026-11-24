@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-11-24T02:57:28.234676+00:00",
+  "period": "daily",
+  "period_start": "2026-11-24T00:00:00+00:00",
+  "period_end": "2026-11-24T23:59:59+00:00",
+  "total_orders": 0,
+  "total_amount": 0.0,
+  "shop_stats": [],
+  "platform_stats": {},
+  "confirmed_total": 0.0,
+  "pending_total": 0.0,
+  "cancelled_total": 0.0
+}

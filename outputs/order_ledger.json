@@ -1,0 +1,108 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-11-24T02:57:28.233873+00:00",
+  "total_entries": 2,
+  "entries": [
+    {
+      "order_id": "WB_12345678",
+      "platform": "WB_CN",
+      "shop_id": "250146669",
+      "order_date": "2026-11-23T10:30:00+00:00",
+      "payment_date": "2026-11-23T10:35:00+00:00",
+      "shipped_date": null,
+      "delivery_date": null,
+      "total_amount": 1500.0,
+      "currency": "RUB",
+      "sku": "SKU-001",
+      "items": [],
+      "platform_state": "pending",
+      "state_machine_state": "paid",
+      "tracking_number": null,
+      "shipping_provider": null,
+      "payment_confirmed": true,
+      "delivered": false,
+      "signature_confirmed": false,
+      "reconciliation_status": "pending",
+      "matched_on_platform": false,
+      "missing_flag": false,
+      "ledger_entry_id": "14423512b265be53",
+      "last_updated": "2026-11-23T12:28:02.789847+00:00",
+      "api_response_hash": null,
+      "created_at": "2026-11-23T12:28:02.789975+00:00"
+    },
+    {
+      "order_id": "OZ_87654321",
+      "platform": "Ozon",
+      "shop_id": "6182781",
+      "order_date": "2026-11-22T14:20:00+00:00",
+      "payment_date": "2026-11-22T14:25:00+00:00",
+      "shipped_date": "2026-11-23T08:00:00+00:00",
+      "delivery_date": null,
+      "total_amount": 2500.0,
+      "currency": "RUB",
+      "sku": "SKU-002",
+      "items": [],
+      "platform_state": "shipped",
+      "state_machine_state": "shipped",
+      "tracking_number": null,
+      "shipping_provider": null,
+      "payment_confirmed": true,
+      "delivered": false,
+      "signature_confirmed": false,
+      "reconciliation_status": "pending",
+      "matched_on_platform": false,
+      "missing_flag": false,
+      "ledger_entry_id": "47ecfbbe73f92a11",
+      "last_updated": "2026-11-23T12:28:02.789980+00:00",
+      "api_response_hash": null,
+      "created_at": "2026-11-23T12:28:02.789981+00:00"
+    }
+  ],
+  "statistics": {
+    "total_orders": 2,
+    "total_amount": 4000.0,
+    "by_platform": {
+      "WB_CN": {
+        "count": 1,
+        "total_amount": 1500.0,
+        "shops": [
+          "250146669"
+        ]
+      },
+      "Ozon": {
+        "count": 1,
+        "total_amount": 2500.0,
+        "shops": [
+          "6182781"
+        ]
+      }
+    },
+    "by_shop_id": {
+      "250146669": {
+        "count": 1,
+        "total_amount": 1500.0,
+        "platforms": [
+          "WB_CN"
+        ]
+      },
+      "6182781": {
+        "count": 1,
+        "total_amount": 2500.0,
+        "platforms": [
+          "Ozon"
+        ]
+      }
+    },
+    "by_state": {
+      "paid": 1,
+      "shipped": 1
+    },
+    "reconciliation_summary": {
+      "pending": 2,
+      "matched": 0,
+      "unmatched": 0,
+      "verified": 0,
+      "flagged": 0
+    }
+  }
+}

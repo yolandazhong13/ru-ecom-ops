@@ -1,0 +1,53 @@
+{
+  "timestamp": "2026-11-24T02:57:28.234762+00:00",
+  "ledger_total_orders": 2,
+  "platform_total_orders": 0,
+  "total_discrepancies": 2,
+  "breakdown": {
+    "missing_in_ledger": 0,
+    "missing_on_platform": 2,
+    "amount_mismatches": 0,
+    "state_mismatches": 0,
+    "duplicates": 0,
+    "currency_mismatches": 0
+  },
+  "match_statistics": {
+    "matched_orders": 0,
+    "matched_amount_total": 0.0,
+    "discrepant_amount_total": 4000.0
+  },
+  "discrepancies": [
+    {
+      "discrepancy_type": "missing_on_platform",
+      "platform": "WB_CN",
+      "shop_id": "250146669",
+      "order_id": "WB_12345678",
+      "ledger_entry_id": "14423512b265be53",
+      "ledger_amount": 1500.0,
+      "ledger_state": "paid",
+      "ledger_currency": "RUB",
+      "platform_amount": null,
+      "platform_state": null,
+      "platform_currency": null,
+      "description": "Order exists in ledger but not found on WB_CN",
+      "detected_at": "2026-11-24T02:57:28.234779+00:00",
+      "metadata": {}
+    },
+    {
+      "discrepancy_type": "missing_on_platform",
+      "platform": "Ozon",
+      "shop_id": "6182781",
+      "order_id": "OZ_87654321",
+      "ledger_entry_id": "47ecfbbe73f92a11",
+      "ledger_amount": 2500.0,
+      "ledger_state": "shipped",
+      "ledger_currency": "RUB",
+      "platform_amount": null,
+      "platform_state": null,
+      "platform_currency": null,
+      "description": "Order exists in ledger but not found on Ozon",
+      "detected_at": "2026-11-24T02:57:28.234782+00:00",
+      "metadata": {}
+    }
+  ]
+}

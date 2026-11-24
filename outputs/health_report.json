@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-11-20T06:36:20.708219+00:00",
+  "overall_summary": {
+    "overall_status": "healthy",
+    "total_modules": 1,
+    "module_status_distribution": {
+      "healthy": 1
+    },
+    "total_executions": 1,
+    "total_successful": 1,
+    "total_failed": 0,
+    "overall_success_rate": 100.0,
+    "overall_error_rate": 0.0,
+    "alerts": [],
+    "updated_at": "2026-11-20T06:36:20.708204+00:00"
+  },
+  "module_metrics": {
+    "inventory_update@WB_CN": {
+      "module_name": "inventory_update@WB_CN",
+      "action_type": "inventory_update",
+      "platform": "WB_CN",
+      "total_executions": 1,
+      "successful_executions": 1,
+      "failed_executions": 0,
+      "blocked_executions": 0,
+      "awaiting_confirmation": 0,
+      "average_duration_ms": 28.0,
+      "p50_duration_ms": 28,
+      "p95_duration_ms": 28,
+      "p99_duration_ms": 28,
+      "error_rate": 0.0,
+      "last_execution": "2026-11-20T06:34:36.459251+00:00",
+      "last_error": null,
+      "status": "healthy",
+      "updated_at": "2026-11-20T06:36:20.708155+00:00",
+      "success_rate": 100.0
+    }
+  },
+  "execution_history": [
+    {
+      "task_id": "test-inventory-executor-ru-ecom-ops-20261120",
+      "action_type": "inventory_update",
+      "platform": "WB_CN",
+      "result": "success",
+      "duration_ms": 28,
+      "timestamp": "2026-11-20T06:34:36.459251+00:00",
+      "error_message": null,
+      "p02_status": "verified",
+      "verification_passed": true
+    }
+  ]
+}

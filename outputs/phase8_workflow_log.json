@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-11-24T06:13:43.779062+00:00",
+  "steps": [
+    {
+      "step": "anomaly_prediction",
+      "status": "completed",
+      "total_predictions": 2,
+      "high_risk": 0,
+      "medium_risk": 2,
+      "avg_score": 57.5
+    },
+    {
+      "step": "trend_forecasting",
+      "status": "completed",
+      "metrics": [
+        "revenue",
+        "orders",
+        "anomalies"
+      ],
+      "revenue_trend": "stable",
+      "orders_trend": "stable"
+    },
+    {
+      "step": "pattern_detection",
+      "status": "completed",
+      "total_patterns": 2,
+      "shop_patterns": 0,
+      "platform_patterns": 2
+    },
+    {
+      "step": "root_cause_analysis",
+      "status": "completed",
+      "unmatched_issues": 2,
+      "payment_issues": 0,
+      "confidence": {
+        "unmatched": 0.8,
+        "payment": 0.7
+      }
+    }
+  ],
+  "status": "success"
+}

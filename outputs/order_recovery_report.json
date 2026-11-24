@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-11-24T03:29:23.916433+00:00",
+  "metrics": {
+    "total_candidates": 0,
+    "recovery_attempted": 0,
+    "recovery_successful": 0,
+    "escalated_customer": 0,
+    "escalated_operations": 0,
+    "manual_review_flagged": 0
+  },
+  "attempts": []
+}

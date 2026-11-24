@@ -1,0 +1,5 @@
+{"order_id": "OZ_123456", "message": "Payment confirmation delayed", "severity": "P1", "timestamp": "2026-11-24T03:59:19.772833+00:00", "details": {"reason": "Platform API timeout"}}
+{"order_id": "WB_654321", "message": "Order reconciliation failed", "severity": "P0", "timestamp": "2026-11-24T03:59:19.773307+00:00", "details": {"discrepancy": "Missing on platform"}}
+{"order_id": "OZ_111111", "message": "Shipment tracking updated", "severity": "P2", "timestamp": "2026-11-24T03:59:19.773378+00:00", "details": {}}
+{"order_id": "SETUP_TEST_001", "message": "Phase 6 initialization successful", "severity": "P2", "timestamp": "2026-11-24T04:00:03.504653+00:00", "details": {"phase": "6", "component": "setup"}}
+{"order_id": "SETUP_TEST_001", "message": "Phase 6 initialization successful", "severity": "P2", "timestamp": "2026-11-24T04:01:01.979847+00:00", "details": {"phase": "6", "component": "setup"}}

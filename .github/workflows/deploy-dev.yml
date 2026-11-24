@@ -1,0 +1,91 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'helm/**'
+      - 'docs/**'
+      - '.github/workflows/deploy-dev.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.12.0
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v1.27.0
+
+      - name: Configure kubeconfig
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_DEV }}
+        run: |
+          mkdir -p $HOME/.kube
+          echo "$KUBECONFIG_CONTENT" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Validate Helm Chart
+        run: |
+          ./scripts/validate-helm-chart.sh
+
+      - name: Create Slack secret
+        run: |
+          kubectl create namespace ru-ecom-ops --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret generic alertmanager-secrets \
+            --from-literal=slack-webhook-url='${{ secrets.SLACK_WEBHOOK_DEV }}' \
+            -n ru-ecom-ops \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy Helm Chart
+        run: |
+          ./scripts/deploy-helm-chart.sh dev
+
+      - name: Verify Deployment
+        run: |
+          ./scripts/verify-deployment.sh ru-ecom-ops 300
+
+      - name: Notify Success
+        if: success()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_DEV }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "✅ Development deployment successful",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Development Deployment Complete*\n\n:white_check_mark: Helm chart deployed successfully\n`Commit:` `${{ github.sha }}`"
+                  }
+                }
+              ]
+            }'
+
+      - name: Notify Failure
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_DEV }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "❌ Development deployment failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Development Deployment Failed*\n\n:x: Deployment encountered errors\n`Commit:` `${{ github.sha }}`\n`Branch:` `${{ github.ref }}`"
+                  }
+                }
+              ]
+            }'

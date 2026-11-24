@@ -1,0 +1,285 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ru-ecom-ops-app
+  namespace: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    component: app
+    environment: production
+  annotations:
+    description: "Core order tracking and reconciliation application"
+    version: "1.0.0"
+
+spec:
+  # High availability: 3 replicas for production
+  replicas: 3
+
+  # Pod selection strategy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+  # Pod selector
+  selector:
+    matchLabels:
+      app: ru-ecom-ops
+      component: app
+
+  # Pod template
+  template:
+    metadata:
+      labels:
+        app: ru-ecom-ops
+        component: app
+        environment: production
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5000"
+        prometheus.io/path: "/metrics"
+
+    spec:
+      # Service account for RBAC
+      serviceAccountName: ru-ecom-ops-app
+
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Termination grace period for graceful shutdown
+      terminationGracePeriodSeconds: 30
+
+      # Container specification
+      containers:
+        - name: app
+          # Container image (must be built and pushed to registry)
+          image: ru-ecom-ops:latest
+          imagePullPolicy: IfNotPresent
+
+          # Port configuration
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+
+          # Environment variables from ConfigMap and Secrets
+          env:
+            # Non-sensitive configuration from ConfigMap
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: ru-ecom-ops-config
+                  key: NODE_ENV
+
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: ru-ecom-ops-config
+                  key: LOG_LEVEL
+
+            - name: WEB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: ru-ecom-ops-config
+                  key: WEB_HOST
+
+            - name: WEB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ru-ecom-ops-config
+                  key: WEB_PORT
+
+            - name: DATABASE_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: ru-ecom-ops-config
+                  key: DATABASE_PATH
+
+            - name: RATE_LIMIT_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: ru-ecom-ops-config
+                  key: RATE_LIMIT_ENABLED
+
+            - name: RATE_LIMIT_REQUESTS
+              valueFrom:
+                configMapKeyRef:
+                  name: ru-ecom-ops-config
+                  key: RATE_LIMIT_REQUESTS
+
+            - name: RATE_LIMIT_WINDOW
+              valueFrom:
+                configMapKeyRef:
+                  name: ru-ecom-ops-config
+                  key: RATE_LIMIT_WINDOW
+
+            - name: CIRCUIT_BREAKER_THRESHOLD
+              valueFrom:
+                configMapKeyRef:
+                  name: ru-ecom-ops-config
+                  key: CIRCUIT_BREAKER_THRESHOLD
+
+            - name: CIRCUIT_BREAKER_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: ru-ecom-ops-config
+                  key: CIRCUIT_BREAKER_TIMEOUT
+
+            # Sensitive configuration from Secrets
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ru-ecom-ops-secrets
+                  key: slack-webhook-url
+
+            - name: SMTP_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: ru-ecom-ops-secrets
+                  key: smtp-server
+
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: ru-ecom-ops-secrets
+                  key: smtp-port
+
+            - name: SMTP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ru-ecom-ops-secrets
+                  key: smtp-user
+
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ru-ecom-ops-secrets
+                  key: smtp-password
+
+            - name: ALERT_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: ru-ecom-ops-secrets
+                  key: alert-email
+
+          # Volume mounts
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: logs
+              mountPath: /app/logs
+            - name: backups
+              mountPath: /backups
+            - name: scripts
+              mountPath: /app/scripts
+            - name: outputs
+              mountPath: /app/outputs
+
+          # Resource requests and limits
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+
+          # Liveness probe: restart container if unhealthy
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Readiness probe: remove from load balancer if unready
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 2
+
+          # Startup probe: allow time for initial startup
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 30
+
+          # Security context for container
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: false
+
+          # Stdin/TTY settings
+          stdin: false
+          tty: false
+
+      # Volumes
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: ru-ecom-ops-data-pvc
+
+        - name: logs
+          persistentVolumeClaim:
+            claimName: ru-ecom-ops-logs-pvc
+
+        - name: backups
+          persistentVolumeClaim:
+            claimName: ru-ecom-ops-backups-pvc
+
+        - name: scripts
+          configMap:
+            name: ru-ecom-ops-scripts
+            defaultMode: 0755
+
+        - name: outputs
+          emptyDir:
+            sizeLimit: 1Gi
+
+      # Affinity rules for pod distribution
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - ru-ecom-ops
+                topologyKey: kubernetes.io/hostname
+
+      # Restart policy
+      restartPolicy: Always
+
+      # DNS policy
+      dnsPolicy: ClusterFirst
+
+      # Image pull secrets (if using private registry)
+      # imagePullSecrets:
+      #   - name: registry-credentials

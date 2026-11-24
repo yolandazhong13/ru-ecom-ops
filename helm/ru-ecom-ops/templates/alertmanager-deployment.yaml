@@ -1,0 +1,309 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ru-ecom-ops.fullname" . }}-alertmanager-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ru-ecom-ops.labels" . | nindent 4 }}
+    app: alertmanager
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+      {{- if .Values.alertmanager.slack.enabled }}
+      slack_api_url: '${SLACK_WEBHOOK_URL}'
+      {{- end }}
+
+    # Templates
+    templates:
+      - '/etc/alertmanager/templates/slack.tmpl'
+
+    # Routes for alert handling
+    route:
+      receiver: 'default'
+      group_by: ['alertname', 'cluster', 'service']
+      group_wait: {{ .Values.alertmanager.routing.groupWait }}
+      group_interval: {{ .Values.alertmanager.routing.groupInterval }}
+      repeat_interval: {{ .Values.alertmanager.routing.repeatInterval }}
+      routes:
+        # Critical alerts - immediate Slack notification
+        - match:
+            severity: critical
+          receiver: 'critical'
+          group_wait: {{ .Values.alertmanager.routing.routes[0].groupWait }}
+          repeat_interval: {{ .Values.alertmanager.routing.routes[0].repeatInterval }}
+
+        # Warning alerts - batched Slack notification
+        - match:
+            severity: warning
+          receiver: 'default'
+          group_wait: {{ .Values.alertmanager.routing.routes[1].groupWait }}
+          repeat_interval: {{ .Values.alertmanager.routing.routes[1].repeatInterval }}
+
+        # Info alerts - once per day
+        - match:
+            severity: info
+          receiver: 'info'
+          repeat_interval: {{ .Values.alertmanager.routing.routes[2].repeatInterval }}
+
+    # Receivers: how to send alerts
+    receivers:
+    {{- if .Values.alertmanager.slack.enabled }}
+    - name: 'default'
+      slack_configs:
+      - channel: '{{ .Values.alertmanager.slack.channels.default }}'
+        title: '{{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+        color: '{{ if eq .Status "firing" }}warning{{ else }}good{{ end }}'
+
+    - name: 'critical'
+      slack_configs:
+      - channel: '{{ .Values.alertmanager.slack.channels.critical }}'
+        title: 'CRITICAL: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+        color: 'danger'
+      {{- if .Values.alertmanager.pagerduty.enabled }}
+      pagerduty_configs:
+      - routing_key: '${PAGERDUTY_ROUTING_KEY}'
+        description: '{{ .GroupLabels.alertname }}'
+        details:
+          firing: '{{ template "pagerduty.default.instances" .Alerts.Firing }}'
+      {{- end }}
+
+    - name: 'info'
+      slack_configs:
+      - channel: '{{ .Values.alertmanager.slack.channels.info }}'
+        title: 'Info: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+        color: 'good'
+    {{- end }}
+
+    # Inhibit rules: suppress certain alerts
+    inhibit_rules:
+      # Don't alert on high error rate if circuit breaker is open (it's already open)
+      - source_match:
+          alertname: 'CircuitBreakerOpen'
+        target_match:
+          alertname: 'HighErrorRate'
+        equal: ['severity']
+
+      # Don't alert on pod crashing if deployment is completely down
+      - source_match:
+          alertname: 'ServiceDown'
+        target_match:
+          alertname: 'PodCrashing'
+        equal: ['service']
+
+  slack.tmpl: |
+    {{ define "slack.default.title" -}}
+    [{{ .Status | toUpper -}}
+    {{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{- else }}:{{ .Alerts.Resolved | len }}{{- end }}
+    ] {{ .CommonLabels.alertname }}
+    {{- end }}
+
+    {{ define "slack.default.text" -}}
+    {{ range .Alerts -}}
+    *Alert:* {{ .Labels.alertname }} - `{{ .Labels.severity }}`
+    *Description:* {{ .Annotations.description }}
+    *Details:*
+      {{ range .Labels.SortedPairs -}}
+      • *{{ .Name }}:* `{{ .Value }}`
+      {{ end }}
+      {{ range .Annotations.SortedPairs -}}
+      • *{{ .Name }}:* `{{ .Value }}`
+      {{ end }}
+    {{ end }}
+    {{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ru-ecom-ops.fullname" . }}-alertmanager
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ru-ecom-ops.labels" . | nindent 4 }}
+    app: alertmanager
+spec:
+  replicas: {{ .Values.alertmanager.replicaCount }}
+  strategy:
+    type: {{ .Values.updateStrategy.type }}
+    {{- if eq .Values.updateStrategy.type "RollingUpdate" }}
+    rollingUpdate:
+      maxSurge: {{ .Values.updateStrategy.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.updateStrategy.rollingUpdate.maxUnavailable }}
+    {{- end }}
+  selector:
+    matchLabels:
+      {{- include "ru-ecom-ops.selectorLabels" . | nindent 6 }}
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        {{- include "ru-ecom-ops.selectorLabels" . | nindent 8 }}
+        app: alertmanager
+      annotations:
+        prometheus.io/scrape: 'false'
+    spec:
+      serviceAccountName: {{ include "ru-ecom-ops.fullname" . }}-alertmanager
+      securityContext:
+        runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+
+      containers:
+      - name: alertmanager
+        image: "{{ .Values.alertmanager.image.repository }}:{{ .Values.alertmanager.image.tag }}"
+        imagePullPolicy: {{ .Values.alertmanager.image.pullPolicy }}
+        args:
+          - '--config.file=/etc/alertmanager/alertmanager.yml'
+          - '--storage.path=/alertmanager'
+          - '--log.level={{ .Values.logLevel }}'
+
+        ports:
+        - name: web
+          containerPort: {{ .Values.alertmanager.service.port }}
+          protocol: TCP
+
+        resources:
+          {{- toYaml .Values.alertmanager.resources | nindent 10 }}
+
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: web
+          initialDelaySeconds: {{ .Values.alertmanager.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.alertmanager.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.alertmanager.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.alertmanager.livenessProbe.failureThreshold }}
+
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: web
+          initialDelaySeconds: {{ .Values.alertmanager.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.alertmanager.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.alertmanager.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.alertmanager.readinessProbe.failureThreshold }}
+
+        volumeMounts:
+        - name: alertmanager-config
+          mountPath: /etc/alertmanager
+        - name: alertmanager-storage
+          mountPath: /alertmanager
+
+        env:
+        {{- if .Values.alertmanager.slack.enabled }}
+        - name: SLACK_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.alertmanager.slack.webhookUrlSecret }}
+              key: {{ .Values.alertmanager.slack.webhookUrlKey }}
+        {{- end }}
+        {{- if .Values.alertmanager.pagerduty.enabled }}
+        - name: PAGERDUTY_ROUTING_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.alertmanager.pagerduty.routingKeySecret }}
+              key: {{ .Values.alertmanager.pagerduty.routingKeyKey }}
+        {{- end }}
+
+        securityContext:
+          {{- toYaml .Values.securityContext.containerSecurityContext | nindent 10 }}
+
+      volumes:
+      - name: alertmanager-config
+        configMap:
+          name: {{ include "ru-ecom-ops.fullname" . }}-alertmanager-config
+      - name: alertmanager-storage
+        persistentVolumeClaim:
+          claimName: {{ include "ru-ecom-ops.fullname" . }}-alertmanager-storage
+
+      {{- with .Values.alertmanager.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ru-ecom-ops.fullname" . }}-alertmanager
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ru-ecom-ops.labels" . | nindent 4 }}
+    app: alertmanager
+spec:
+  type: {{ .Values.alertmanager.service.type }}
+  selector:
+    {{- include "ru-ecom-ops.selectorLabels" . | nindent 4 }}
+    app: alertmanager
+  ports:
+  - name: web
+    port: {{ .Values.alertmanager.service.port }}
+    targetPort: web
+    protocol: TCP
+
+---
+{{- if .Values.alertmanager.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "ru-ecom-ops.fullname" . }}-alertmanager-storage
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ru-ecom-ops.labels" . | nindent 4 }}
+    app: alertmanager
+spec:
+  accessModes:
+    - {{ .Values.alertmanager.persistence.accessMode }}
+  storageClassName: {{ .Values.alertmanager.persistence.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.alertmanager.persistence.size }}
+{{- end }}
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "ru-ecom-ops.fullname" . }}-alertmanager
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ru-ecom-ops.labels" . | nindent 4 }}
+    app: alertmanager
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "ru-ecom-ops.fullname" . }}-alertmanager
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ru-ecom-ops.labels" . | nindent 4 }}
+    app: alertmanager
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "ru-ecom-ops.fullname" . }}-alertmanager
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ru-ecom-ops.labels" . | nindent 4 }}
+    app: alertmanager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "ru-ecom-ops.fullname" . }}-alertmanager
+subjects:
+- kind: ServiceAccount
+  name: {{ include "ru-ecom-ops.fullname" . }}-alertmanager
+  namespace: {{ .Values.namespace }}

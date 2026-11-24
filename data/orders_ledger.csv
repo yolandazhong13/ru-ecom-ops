@@ -1,0 +1,3 @@
+order_id,platform,shop_id,order_date,payment_date,shipped_date,delivery_date,total_amount,currency,sku,platform_state,state_machine_state,reconciliation_status,matched_on_platform,missing_flag,tracking_number,created_at
+WB_12345678,WB_CN,250146669,2026-11-23T10:30:00+00:00,2026-11-23T10:35:00+00:00,,,1500.0,RUB,SKU-001,pending,paid,pending,False,False,,2026-11-23T12:28:02.789975+00:00
+OZ_87654321,Ozon,6182781,2026-11-22T14:20:00+00:00,2026-11-22T14:25:00+00:00,2026-11-23T08:00:00+00:00,,2500.0,RUB,SKU-002,shipped,shipped,pending,False,False,,2026-11-23T12:28:02.789981+00:00

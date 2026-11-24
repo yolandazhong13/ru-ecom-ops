@@ -1,0 +1,40 @@
+{
+  "task_id": "test-listing-executor-phase4-ru-ecom-ops-20261120",
+  "action_type": "listing_update",
+  "platform": "Ozon RU",
+  "p02_status": "verified",
+  "p02_content_hash": "48867f7ed9457e6b99ef4c47b8100405f38d0669eadff19d2376ca82c6060843",
+  "execution_status": "executed",
+  "error": null,
+  "verification": {
+    "after": {
+      "MD-700-ORANGE": {
+        "price": 4999,
+        "old_price": 5999,
+        "min_price": 3500
+      },
+      "MD-4090": {
+        "price": 14999,
+        "old_price": 19999,
+        "min_price": 10000
+      }
+    },
+    "per_offer_verification": {
+      "MD-700-ORANGE": {
+        "price_matches_target": true,
+        "old_price_matches_target": true,
+        "min_price_matches_target": true,
+        "attributes_count": 1
+      },
+      "MD-4090": {
+        "price_matches_target": true,
+        "old_price_matches_target": true,
+        "min_price_matches_target": true,
+        "attributes_count": 1
+      }
+    },
+    "overall_status": "verified_listing_values",
+    "all_valid": true
+  },
+  "timestamp": "2026-11-20T07:01:01.797233+00:00"
+}

@@ -1,0 +1,56 @@
+[
+  {
+    "timestamp": "2026-11-20T12:37:50.007869+00:00",
+    "correlation_id": "req_9c1e5c0d1c9f",
+    "severity": "INFO",
+    "action": "AUTHENTICATION",
+    "actor": "user_admin",
+    "resource": "user:user_admin",
+    "status": "success",
+    "details": {
+      "ip_address": "192.168.1.1",
+      "method": "jwt"
+    }
+  },
+  {
+    "timestamp": "2026-11-20T12:37:50.008037+00:00",
+    "correlation_id": "req_9c1e5c0d1c9f",
+    "severity": "LOW",
+    "action": "AUTHORIZATION_CHECK",
+    "actor": "user_admin",
+    "resource": "user:123",
+    "status": "granted",
+    "details": {
+      "permission": "DELETE_USER",
+      "grant_status": "granted"
+    }
+  },
+  {
+    "timestamp": "2026-11-20T12:37:50.008040+00:00",
+    "correlation_id": "req_9c1e5c0d1c9f",
+    "severity": "HIGH",
+    "action": "DATA_UPDATE",
+    "actor": "user_admin",
+    "resource": "db:products:prod_456",
+    "status": "success",
+    "details": {
+      "table": "products",
+      "changes": {
+        "price": 2500,
+        "margin": 50
+      }
+    }
+  },
+  {
+    "timestamp": "2026-11-20T12:37:50.008042+00:00",
+    "correlation_id": "req_9c1e5c0d1c9f",
+    "severity": "CRITICAL",
+    "action": "SECURITY_INJECTION_ATTEMPT",
+    "actor": "192.168.1.100",
+    "resource": "api:/products",
+    "status": "failure",
+    "details": {
+      "description": "SQL injection detected in query parameter"
+    }
+  }
+]

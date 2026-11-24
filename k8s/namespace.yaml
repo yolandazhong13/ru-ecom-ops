@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    environment: production

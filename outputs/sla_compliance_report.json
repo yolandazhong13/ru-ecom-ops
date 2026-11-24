@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-11-24T03:16:41.426121+00:00",
+  "period_start": "2026-10-25",
+  "period_end": "2026-11-24",
+  "total_orders_analyzed": 2,
+  "total_violations": 0,
+  "overall_compliance_pct": 100.0,
+  "sla_metrics": [
+    {
+      "sla_type": "payment_confirmation",
+      "total_orders": 2,
+      "compliant_orders": 2,
+      "violated_orders": 0,
+      "compliance_pct": 100.0,
+      "avg_violation_minutes": 0.0,
+      "max_violation_minutes": 0.0
+    },
+    {
+      "sla_type": "shipment_timing",
+      "total_orders": 1,
+      "compliant_orders": 1,
+      "violated_orders": 0,
+      "compliance_pct": 100.0,
+      "avg_violation_minutes": 0.0,
+      "max_violation_minutes": 0.0
+    },
+    {
+      "sla_type": "delivery_timing",
+      "total_orders": 0,
+      "compliant_orders": 0,
+      "violated_orders": 0,
+      "compliance_pct": 0.0,
+      "avg_violation_minutes": 0.0,
+      "max_violation_minutes": 0.0
+    }
+  ],
+  "violations": []
+}

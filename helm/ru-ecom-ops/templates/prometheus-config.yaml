@@ -1,0 +1,334 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ru-ecom-ops.fullname" . }}-prometheus-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ru-ecom-ops.labels" . | nindent 4 }}
+    app: prometheus
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: {{ .Values.prometheus.scrapeInterval }}
+      evaluation_interval: {{ .Values.prometheus.evaluationInterval }}
+      external_labels:
+        cluster: '{{ .Values.prometheus.externalLabels.cluster }}'
+        environment: '{{ .Values.prometheus.externalLabels.environment }}'
+
+    # Alertmanager configuration
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+                - {{ include "ru-ecom-ops.fullname" . }}-alertmanager:{{ .Values.alertmanager.service.port }}
+
+    # Load rules once and periodically evaluate them
+    rule_files:
+      - '/etc/prometheus/rules/alert-rules.yaml'
+      - '/etc/prometheus/rules/recording-rules.yaml'
+
+    scrape_configs:
+      # Prometheus self-monitoring
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:{{ .Values.prometheus.service.port }}']
+
+      # Kubernetes API server metrics
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+          - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+
+      # Kubernetes nodes metrics
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics
+
+      # Kubernetes pods metrics via kubelet
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: 'true'
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+
+      # ru-ecom-ops application metrics
+      - job_name: 'ru-ecom-ops'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - {{ .Values.namespace }}
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: 'ru-ecom-ops'
+          - source_labels: [__meta_kubernetes_pod_ip]
+            action: replace
+            target_label: __address__
+            replacement: $1:9090
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+        metric_relabel_configs:
+          # Drop high-cardinality labels
+          - source_labels: [__name__]
+            regex: 'container_network_tcp_usage_total|container_network_udp_usage_total'
+            action: drop
+
+      # Kubernetes persistent volumes
+      - job_name: 'kubernetes-storage'
+        kubernetes_sd_configs:
+          - role: persistentvolume
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_persistentvolume_label_(.+)
+
+      # Kube-state-metrics (if deployed)
+      - job_name: 'kube-state-metrics'
+        static_configs:
+          - targets: ['kube-state-metrics:8080']
+        scrape_interval: 30s
+
+      # Node exporter metrics
+      - job_name: 'node-exporter'
+        kubernetes_sd_configs:
+          - role: endpoints
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_endpoints_name]
+            action: keep
+            regex: 'node-exporter'
+          - source_labels: [__meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: 'metrics'
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ru-ecom-ops.fullname" . }}-prometheus-recording-rules
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ru-ecom-ops.labels" . | nindent 4 }}
+    app: prometheus
+data:
+  recording-rules.yaml: |
+    groups:
+      - name: 'application.rules'
+        interval: {{ .Values.recordingRules.interval }}
+        rules:
+          # Request rate (5m avg)
+          - record: 'app:request_rate:5m'
+            expr: 'rate(http_requests_total[5m])'
+
+          # Error rate (5m avg)
+          - record: 'app:error_rate:5m'
+            expr: 'rate(http_requests_total{status=~"5.."}[5m])'
+
+          # P99 latency
+          - record: 'app:request_latency:p99:5m'
+            expr: 'histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))'
+
+          # P95 latency
+          - record: 'app:request_latency:p95:5m'
+            expr: 'histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))'
+
+          # P50 latency
+          - record: 'app:request_latency:p50:5m'
+            expr: 'histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))'
+
+          # CPU usage ratio
+          - record: 'app:cpu_usage_ratio:5m'
+            expr: 'rate(container_cpu_usage_seconds_total{pod=~"ru-ecom-ops.*"}[5m])'
+
+          # Memory usage ratio
+          - record: 'app:memory_usage_ratio:5m'
+            expr: 'container_memory_usage_bytes{pod=~"ru-ecom-ops.*"} / container_spec_memory_limit_bytes'
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ru-ecom-ops.fullname" . }}-prometheus-alert-rules
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ru-ecom-ops.labels" . | nindent 4 }}
+    app: prometheus
+data:
+  alert-rules.yaml: |
+    groups:
+      - name: 'application.alerts'
+        interval: {{ .Values.alertRules.interval }}
+        rules:
+          {{- if .Values.alertRules.podCrashing.enabled }}
+          # Pod crashes (more than 2 restarts in 1 hour)
+          - alert: 'PodCrashing'
+            expr: 'rate(kube_pod_container_status_restarts_total{pod=~"ru-ecom-ops.*"}[1h]) > 0'
+            for: 5m
+            labels:
+              severity: {{ .Values.alertRules.podCrashing.severity }}
+              component: pod
+            annotations:
+              summary: 'Pod {{ $labels.pod }} is crashing'
+              description: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} has restarted {{ $value }} times in the last hour'
+          {{- end }}
+
+          {{- if .Values.alertRules.highErrorRate.enabled }}
+          # High error rate (> 5% of requests)
+          - alert: 'HighErrorRate'
+            expr: '(rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) > {{ .Values.alertRules.highErrorRate.threshold }}'
+            for: {{ .Values.alertRules.highErrorRate.duration }}
+            labels:
+              severity: {{ .Values.alertRules.highErrorRate.severity }}
+              component: application
+            annotations:
+              summary: 'High error rate detected'
+              description: 'Error rate is {{ $value | humanizePercentage }} in the last 5 minutes'
+          {{- end }}
+
+          {{- if .Values.alertRules.highRequestLatency.enabled }}
+          # High request latency (P99 > 500ms)
+          - alert: 'HighRequestLatency'
+            expr: 'app:request_latency:p99:5m > {{ .Values.alertRules.highRequestLatency.threshold }}'
+            for: {{ .Values.alertRules.highRequestLatency.duration }}
+            labels:
+              severity: {{ .Values.alertRules.highRequestLatency.severity }}
+              component: application
+            annotations:
+              summary: 'High request latency detected'
+              description: 'P99 latency is {{ $value | humanizeDuration }} in the last 5 minutes'
+          {{- end }}
+
+          {{- if .Values.alertRules.highMemoryUsage.enabled }}
+          # High memory usage (> 80% of limit)
+          - alert: 'HighMemoryUsage'
+            expr: 'app:memory_usage_ratio:5m > {{ .Values.alertRules.highMemoryUsage.threshold }}'
+            for: {{ .Values.alertRules.highMemoryUsage.duration }}
+            labels:
+              severity: {{ .Values.alertRules.highMemoryUsage.severity }}
+              component: pod
+            annotations:
+              summary: 'High memory usage in pod {{ $labels.pod }}'
+              description: 'Memory usage is {{ $value | humanizePercentage }} of the limit'
+          {{- end }}
+
+          {{- if .Values.alertRules.cpuThrottling.enabled }}
+          # CPU throttling
+          - alert: 'CPUThrottling'
+            expr: 'rate(container_cpu_cfs_throttled_seconds_total{pod=~"ru-ecom-ops.*"}[5m]) > {{ .Values.alertRules.cpuThrottling.threshold }}'
+            for: {{ .Values.alertRules.cpuThrottling.duration }}
+            labels:
+              severity: {{ .Values.alertRules.cpuThrottling.severity }}
+              component: pod
+            annotations:
+              summary: 'CPU throttling detected in pod {{ $labels.pod }}'
+              description: 'Pod is being throttled at a rate of {{ $value | humanizePercentage }}'
+          {{- end }}
+
+          {{- if .Values.alertRules.persistentVolumeFull.enabled }}
+          # Persistent volume disk space (> 80%)
+          - alert: 'PersistentVolumeFull'
+            expr: '(kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) > {{ .Values.alertRules.persistentVolumeFull.threshold }}'
+            for: {{ .Values.alertRules.persistentVolumeFull.duration }}
+            labels:
+              severity: {{ .Values.alertRules.persistentVolumeFull.severity }}
+              component: storage
+            annotations:
+              summary: 'Persistent volume {{ $labels.persistentvolumeclaim }} is {{ $value | humanizePercentage }} full'
+              description: 'Available space: {{ $value | humanize }}%'
+          {{- end }}
+
+          {{- if .Values.alertRules.databaseConnectionError.enabled }}
+          # Database connection errors
+          - alert: 'DatabaseConnectionError'
+            expr: 'rate(db_connection_errors_total[5m]) > 0'
+            for: {{ .Values.alertRules.databaseConnectionError.duration }}
+            labels:
+              severity: {{ .Values.alertRules.databaseConnectionError.severity }}
+              component: database
+            annotations:
+              summary: 'Database connection errors detected'
+              description: 'Error rate: {{ $value }} errors per second'
+          {{- end }}
+
+          {{- if .Values.alertRules.circuitBreakerOpen.enabled }}
+          # Circuit breaker open
+          - alert: 'CircuitBreakerOpen'
+            expr: 'circuit_breaker_state{state="open"} > 0'
+            for: {{ .Values.alertRules.circuitBreakerOpen.duration }}
+            labels:
+              severity: {{ .Values.alertRules.circuitBreakerOpen.severity }}
+              component: application
+            annotations:
+              summary: 'Circuit breaker is open for {{ $labels.service }}'
+              description: 'Circuit breaker has been open for more than 2 minutes'
+          {{- end }}
+
+          {{- if .Values.alertRules.serviceDown.enabled }}
+          # Service endpoint down (no scrape for 2 minutes)
+          - alert: 'ServiceDown'
+            expr: 'up{job="ru-ecom-ops"} == 0'
+            for: {{ .Values.alertRules.serviceDown.duration }}
+            labels:
+              severity: {{ .Values.alertRules.serviceDown.severity }}
+              component: application
+            annotations:
+              summary: 'Service {{ $labels.instance }} is down'
+              description: 'Service has been unreachable for more than 2 minutes'
+          {{- end }}
+
+          {{- if .Values.alertRules.deploymentReplicasMismatch.enabled }}
+          # Deployment replica mismatch
+          - alert: 'DeploymentReplicasMismatch'
+            expr: 'kube_deployment_status_replicas_available{deployment="ru-ecom-ops"} != kube_deployment_spec_replicas'
+            for: {{ .Values.alertRules.deploymentReplicasMismatch.duration }}
+            labels:
+              severity: {{ .Values.alertRules.deploymentReplicasMismatch.severity }}
+              component: deployment
+            annotations:
+              summary: 'Deployment {{ $labels.deployment }} has fewer ready replicas than desired'
+              description: 'Available: {{ $value }}, Desired: {{ $labels.desired }}'
+          {{- end }}

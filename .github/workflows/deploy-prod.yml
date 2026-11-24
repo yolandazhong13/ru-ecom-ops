@@ -1,0 +1,257 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy'
+        required: true
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=${{ github.event.inputs.version }}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Deploying version: $VERSION"
+
+  security-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: 'helm/ru-ecom-ops'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Check for hardcoded secrets
+        run: |
+          if grep -r "password\|secret\|token\|key" helm/ru-ecom-ops/*.yaml | grep -v "^#" ; then
+            echo "⚠️  Potential hardcoded secrets detected"
+            exit 1
+          fi
+          echo "✓ No hardcoded secrets found"
+
+  approval-check:
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [prepare, security-checks]
+    steps:
+      - run: echo "⚠️  Production deployment requires manual approval"
+      - run: echo "Approval granted for production deployment - Version ${{ needs.prepare.outputs.version }}"
+
+  backup:
+    runs-on: ubuntu-latest
+    needs: approval-check
+    environment: production
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v1.27.0
+
+      - name: Configure kubeconfig
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_PROD }}
+        run: |
+          mkdir -p $HOME/.kube
+          echo "$KUBECONFIG_CONTENT" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Backup Current Release
+        run: |
+          helm get values ru-ecom-ops -n ru-ecom-ops > backup-prod-values.yaml
+          helm get manifest ru-ecom-ops -n ru-ecom-ops > backup-prod-manifest.yaml
+          echo "Backup created at $(date)"
+
+      - name: Upload Backup
+        uses: actions/upload-artifact@v3
+        with:
+          name: production-backup
+          path: |
+            backup-prod-values.yaml
+            backup-prod-manifest.yaml
+          retention-days: 30
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [prepare, backup]
+    environment: production
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.prepare.outputs.version }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.12.0
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v1.27.0
+
+      - name: Configure kubeconfig
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_PROD }}
+        run: |
+          mkdir -p $HOME/.kube
+          echo "$KUBECONFIG_CONTENT" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Validate Helm Chart
+        run: |
+          ./scripts/validate-helm-chart.sh
+
+      - name: Create Secrets
+        run: |
+          kubectl create namespace ru-ecom-ops --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret generic alertmanager-secrets \
+            --from-literal=slack-webhook-url='${{ secrets.SLACK_WEBHOOK_PROD }}' \
+            -n ru-ecom-ops \
+            --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret generic alertmanager-pagerduty \
+            --from-literal=pagerduty-routing-key='${{ secrets.PAGERDUTY_ROUTING_KEY_PROD }}' \
+            -n ru-ecom-ops \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Dry-run Deployment
+        run: |
+          ./scripts/deploy-helm-chart.sh prod dry-run
+
+      - name: Deploy Helm Chart
+        run: |
+          ./scripts/deploy-helm-chart.sh prod
+
+      - name: Verify Deployment
+        run: |
+          ./scripts/verify-deployment.sh ru-ecom-ops 600
+
+      - name: Health Check - 5 minutes
+        run: |
+          kubectl rollout status deployment/ru-ecom-ops-prometheus -n ru-ecom-ops --timeout=5m
+          kubectl rollout status deployment/ru-ecom-ops-alertmanager -n ru-ecom-ops --timeout=5m
+
+      - name: Smoke Tests
+        run: |
+          # Check Prometheus targets
+          kubectl exec -n ru-ecom-ops $(kubectl get pod -n ru-ecom-ops -l app=prometheus -o jsonpath='{.items[0].metadata.name}') \
+            -- curl -s http://localhost:9090/-/ready
+
+          # Check Alertmanager readiness
+          kubectl exec -n ru-ecom-ops $(kubectl get pod -n ru-ecom-ops -l app=alertmanager -o jsonpath='{.items[0].metadata.name}') \
+            -- curl -s http://localhost:9093/-/ready
+
+      - name: Create Deployment Record
+        run: |
+          cat > deployment-record-prod-${{ needs.prepare.outputs.version }}.txt << EOF
+          Deployment: Production
+          Version: ${{ needs.prepare.outputs.version }}
+          Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          Triggered by: ${{ github.actor }}
+          Commit: ${{ github.sha }}
+          Branch: ${{ github.ref_name }}
+          EOF
+
+      - name: Upload Deployment Record
+        uses: actions/upload-artifact@v3
+        with:
+          name: production-deployment-records
+          path: deployment-record-prod-${{ needs.prepare.outputs.version }}.txt
+          retention-days: 90
+
+      - name: Notify Slack - Success
+        if: success()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_PROD }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "✅ Production deployment successful",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Deployment Complete*\n\n:white_check_mark: Version: `${{ needs.prepare.outputs.version }}`\n`Commit:` `${{ github.sha }}`\n`Actor:` `${{ github.actor }}`\n:rocket: All systems operational"
+                  }
+                }
+              ]
+            }'
+
+      - name: Notify Slack - Failure
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_PROD }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "❌ Production deployment failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Deployment Failed*\n\n:x: Version: `${{ needs.prepare.outputs.version }}`\n`Commit:` `${{ github.sha }}`\n`Actor:` `${{ github.actor }}`\n:warning: Check logs and consider rollback"
+                  }
+                }
+              ]
+            }'
+
+  rollback-on-failure:
+    runs-on: ubuntu-latest
+    needs: [prepare, deploy]
+    if: failure()
+    environment: production
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.12.0
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v1.27.0
+
+      - name: Configure kubeconfig
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_PROD }}
+        run: |
+          mkdir -p $HOME/.kube
+          echo "$KUBECONFIG_CONTENT" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Check Helm History
+        run: |
+          helm history ru-ecom-ops -n ru-ecom-ops
+
+      - name: Manual Rollback Required
+        run: |
+          echo "⚠️  Automatic rollback is NOT enabled"
+          echo "Manual intervention required"
+          echo ""
+          echo "To rollback, run:"
+          echo "  helm rollback ru-ecom-ops -n ru-ecom-ops"
+          exit 1

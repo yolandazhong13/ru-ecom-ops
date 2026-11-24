@@ -1,0 +1,207 @@
+# Development Environment Overrides
+# Relaxed thresholds, lower resources, shorter retention
+
+global:
+  environment: development
+
+namespace: ru-ecom-ops
+
+prometheus:
+  replicaCount: 1
+  image:
+    repository: prom/prometheus
+    tag: v2.45.0
+    pullPolicy: IfNotPresent
+
+  retention:
+    time: 7d
+    size: 10Gi
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  persistence:
+    enabled: true
+    storageClassName: standard
+    accessMode: ReadWriteOnce
+    size: 10Gi
+
+  service:
+    type: ClusterIP
+    port: 9090
+
+  scrapeInterval: 30s
+  evaluationInterval: 30s
+
+  externalLabels:
+    cluster: development
+    environment: dev
+
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - prometheus
+            topologyKey: kubernetes.io/hostname
+
+alertmanager:
+  replicaCount: 1
+  image:
+    repository: prom/alertmanager
+    tag: v0.26.0
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  persistence:
+    enabled: true
+    storageClassName: standard
+    accessMode: ReadWriteOnce
+    size: 2Gi
+
+  service:
+    type: ClusterIP
+    port: 9093
+
+  slack:
+    enabled: true
+    webhookUrlSecret: alertmanager-secrets
+    webhookUrlKey: slack-webhook-url
+    channels:
+      default: '#alerts-dev'
+      critical: '#alerts-dev'
+      info: '#monitoring-dev'
+
+  pagerduty:
+    enabled: false
+
+  routing:
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+    routes:
+      - groupWait: 10s
+        repeatInterval: 1h
+      - groupWait: 1m
+        repeatInterval: 2h
+      - repeatInterval: 24h
+
+  livenessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - alertmanager
+            topologyKey: kubernetes.io/hostname
+
+recordingRules:
+  interval: 30s
+
+alertRules:
+  interval: 30s
+
+  # Development: More lenient thresholds
+  podCrashing:
+    enabled: true
+    severity: warning
+
+  highErrorRate:
+    enabled: true
+    threshold: 0.10  # 10% error rate
+    duration: 5m
+    severity: warning
+
+  highRequestLatency:
+    enabled: true
+    threshold: 1.0  # 1 second (1000ms)
+    duration: 5m
+    severity: warning
+
+  highMemoryUsage:
+    enabled: true
+    threshold: 0.90  # 90% of limit
+    duration: 5m
+    severity: warning
+
+  cpuThrottling:
+    enabled: true
+    threshold: 0.5  # 50% throttling
+    duration: 5m
+    severity: info
+
+  persistentVolumeFull:
+    enabled: true
+    threshold: 0.90  # 90% full
+    duration: 5m
+    severity: warning
+
+  databaseConnectionError:
+    enabled: true
+    duration: 5m
+    severity: warning
+
+  circuitBreakerOpen:
+    enabled: true
+    duration: 2m
+    severity: warning
+
+  serviceDown:
+    enabled: true
+    duration: 2m
+    severity: warning
+
+  deploymentReplicasMismatch:
+    enabled: true
+    duration: 5m
+    severity: warning
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  fsGroup: 65534
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+logLevel: info

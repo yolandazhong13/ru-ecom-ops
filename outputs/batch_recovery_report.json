@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-11-24T03:29:23.916207+00:00",
+  "total_batches": 1,
+  "total_items": 2,
+  "total_recovered": 4,
+  "total_failed": 0,
+  "recovery_rate": 200.0,
+  "batches": [
+    {
+      "batch_id": "batch_1",
+      "total_items": 2,
+      "successful": 2,
+      "failed": 0,
+      "skipped": 0,
+      "success_rate": 100.0,
+      "status": "success"
+    }
+  ],
+  "items": [
+    {
+      "order_id": "WB_12345678",
+      "platform": "WB_CN",
+      "status": "recovered",
+      "error_message": null,
+      "retry_count": 0
+    },
+    {
+      "order_id": "OZ_87654321",
+      "platform": "Ozon",
+      "status": "recovered",
+      "error_message": null,
+      "retry_count": 0
+    }
+  ]
+}

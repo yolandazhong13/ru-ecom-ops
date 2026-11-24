@@ -1,0 +1,159 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ru-ecom-ops-config
+  namespace: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    component: config
+    environment: production
+  annotations:
+    description: "Non-sensitive application configuration"
+    version: "1.0.0"
+
+data:
+  # Environment configuration
+  NODE_ENV: "production"
+  LOG_LEVEL: "INFO"
+
+  # Web server configuration
+  WEB_HOST: "0.0.0.0"
+  WEB_PORT: "5000"
+
+  # Database configuration
+  DATABASE_PATH: "/app/data/ecom.db"
+
+  # Rate limiting configuration
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_REQUESTS: "100"
+  RATE_LIMIT_WINDOW: "60"
+
+  # Circuit breaker configuration
+  CIRCUIT_BREAKER_THRESHOLD: "5"
+  CIRCUIT_BREAKER_TIMEOUT: "60"
+
+  # Prometheus configuration (for metrics collection)
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+
+    scrape_configs:
+      - job_name: 'ru-ecom-ops'
+        static_configs:
+          - targets: ['localhost:5000']
+        metrics_path: '/metrics'
+        scrape_interval: 30s
+        scrape_timeout: 10s
+
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - ru-ecom-ops
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+
+  # Application configuration
+  config.json: |
+    {
+      "app": {
+        "name": "ru-ecom-ops",
+        "version": "1.0.0",
+        "environment": "production"
+      },
+      "api": {
+        "host": "0.0.0.0",
+        "port": 5000,
+        "timeout": 30
+      },
+      "database": {
+        "path": "/app/data/ecom.db",
+        "backup_interval": 3600,
+        "retention_days": 7
+      },
+      "monitoring": {
+        "enabled": true,
+        "metrics_port": 5000,
+        "metrics_path": "/metrics"
+      },
+      "logging": {
+        "level": "INFO",
+        "format": "json",
+        "output": "/app/logs/app.log"
+      },
+      "features": {
+        "rate_limiting": true,
+        "circuit_breaker": true,
+        "anomaly_detection": true,
+        "trend_forecasting": true,
+        "pattern_detection": true,
+        "root_cause_analysis": true
+      },
+      "thresholds": {
+        "rate_limit_requests": 100,
+        "rate_limit_window": 60,
+        "circuit_breaker_threshold": 5,
+        "circuit_breaker_timeout": 60,
+        "anomaly_score_threshold": 70
+      }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ru-ecom-ops-scripts
+  namespace: ru-ecom-ops
+  labels:
+    app: ru-ecom-ops
+    component: scripts
+    environment: production
+  annotations:
+    description: "Application startup and utility scripts"
+    version: "1.0.0"
+
+# Note: Script ConfigMap is typically mounted from actual script files
+# In practice, use: kubectl create configmap ru-ecom-ops-scripts \
+#   --from-file=scripts/ \
+#   --namespace=ru-ecom-ops
+#
+# For now, this serves as a template. Script files should be:
+# - phase_orchestrator.py (main application entry point)
+# - order_ledger.py (order state management)
+# - reconciliation_engine.py (reconciliation logic)
+# - anomaly_predictor.py (ML anomaly detection)
+# - trend_forecaster.py (ML trend forecasting)
+# - pattern_detector.py (pattern analysis)
+# - root_cause_analyzer.py (RCA logic)
+# - And other supporting modules
+
+data:
+  # Placeholder - actual scripts loaded via kubectl create configmap
+  README.md: |
+    # Script ConfigMap
+
+    This ConfigMap is populated via:
+
+    ```bash
+    kubectl create configmap ru-ecom-ops-scripts \
+      --from-file=scripts/ \
+      -n ru-ecom-ops \
+      --dry-run=client -o yaml | kubectl apply -f -
+    ```
+
+    Contains all Python scripts required for the application to run,
+    including the main orchestrator, ML analytics modules, and utilities.

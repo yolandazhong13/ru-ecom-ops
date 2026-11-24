@@ -1,0 +1,42 @@
+[
+  {
+    "task_id": "phase7-competitor-pricing-20261120",
+    "action_type": "competitor_price_tracking",
+    "platform": "WB_CN",
+    "content_hash": "309bc17aa7df40a377fcfd3f83b921f304e78d933d017c0c40474c3ec4545e6e",
+    "approved_at": "2026-11-20T07:32:53.634355+00:00",
+    "confirmed_at": "2026-11-20T07:32:53.634434+00:00",
+    "expires_at": "2026-11-20T19:32:53.634329+00:00",
+    "status": "confirmed"
+  },
+  {
+    "task_id": "phase7-demand-forecast-20261120",
+    "action_type": "demand_forecast",
+    "platform": "WB_CN",
+    "content_hash": "12ed6ead4e8c0ed7d1363ff9cf8d0f840f0aa773e69cae92f206584957637ffa",
+    "approved_at": "2026-11-20T07:32:53.693255+00:00",
+    "confirmed_at": "2026-11-20T07:32:53.693338+00:00",
+    "expires_at": "2026-11-20T19:32:53.693224+00:00",
+    "status": "confirmed"
+  },
+  {
+    "task_id": "phase7-inventory-rebalance-20261120",
+    "action_type": "inventory_rebalance",
+    "platform": "WB_CN",
+    "content_hash": "6c497a1d3e0073b48ebfb78a3d4f4937d5f5502319412568045d4f836909cd73",
+    "approved_at": "2026-11-20T07:32:53.747340+00:00",
+    "confirmed_at": "2026-11-20T07:32:53.747452+00:00",
+    "expires_at": "2026-11-20T19:32:53.747296+00:00",
+    "status": "confirmed"
+  },
+  {
+    "task_id": "phase7-policy-monitor-20261120",
+    "action_type": "policy_change_monitor",
+    "platform": "WB_CN",
+    "content_hash": "c8e9e9dbf183be1bb597be8e99f92c8a2737da14b9e538fc3c6d87dfaed05bb8",
+    "approved_at": "2026-11-20T07:32:53.802556+00:00",
+    "confirmed_at": "2026-11-20T07:32:53.802657+00:00",
+    "expires_at": "2026-11-20T19:32:53.802516+00:00",
+    "status": "confirmed"
+  }
+]

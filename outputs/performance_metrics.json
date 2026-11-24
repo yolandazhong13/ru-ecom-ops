@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-11-24T03:46:09.906687+00:00",
+  "orders": {
+    "total": 2,
+    "confirmed": 0,
+    "confirmation_rate": 0.0
+  },
+  "processing": {
+    "orders_per_day": 0.06451612903225806,
+    "revenue_per_day": 133.33333333333334,
+    "anomaly_rate": 0.0
+  },
+  "sla": {
+    "overall_compliance": 100.0,
+    "violations": 0
+  },
+  "anomalies": {
+    "total": 0,
+    "p0_critical": 0,
+    "p1_warning": 0,
+    "p2_info": 0
+  }
+}

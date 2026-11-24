@@ -1,0 +1,261 @@
+{
+  "phase": 10,
+  "focus": "Security Hardening for Production",
+  "categories": {
+    "API Security": {
+      "items": [
+        {
+          "id": "api_001",
+          "requirement": "Implement JWT token authentication",
+          "status": "PENDING",
+          "priority": "CRITICAL",
+          "effort": "4 hours",
+          "description": "Add JWT token validation to all API endpoints",
+          "implementation": [
+            "Generate secret key for token signing",
+            "Add token validation middleware",
+            "Implement token expiration (24 hours)",
+            "Add token refresh endpoint"
+          ]
+        },
+        {
+          "id": "api_002",
+          "requirement": "Implement rate limiting",
+          "status": "PENDING",
+          "priority": "CRITICAL",
+          "effort": "3 hours",
+          "description": "Limit requests per IP/client to prevent abuse",
+          "implementation": [
+            "Implement sliding window rate limiter",
+            "Set limits: 1000 req/hour per IP",
+            "Return 429 (Too Many Requests) when exceeded",
+            "Add rate limit headers to responses"
+          ]
+        },
+        {
+          "id": "api_003",
+          "requirement": "Add input validation",
+          "status": "PENDING",
+          "priority": "CRITICAL",
+          "effort": "3 hours",
+          "description": "Validate all API inputs",
+          "implementation": [
+            "Validate request body schema",
+            "Reject invalid content types",
+            "Sanitize string inputs",
+            "Validate numeric ranges"
+          ]
+        },
+        {
+          "id": "api_004",
+          "requirement": "Add CORS configuration",
+          "status": "PENDING",
+          "priority": "HIGH",
+          "effort": "1 hour",
+          "description": "Configure CORS for allowed origins",
+          "implementation": [
+            "Whitelist allowed origins",
+            "Set allowed methods (GET, POST, etc)",
+            "Set allowed headers",
+            "Disable credentials if not needed"
+          ]
+        }
+      ]
+    },
+    "Database Security": {
+      "items": [
+        {
+          "id": "db_001",
+          "requirement": "Prevent SQL injection",
+          "status": "PENDING",
+          "priority": "CRITICAL",
+          "effort": "2 hours",
+          "description": "Use parameterized queries everywhere",
+          "implementation": [
+            "Verify all queries use parameterized statements",
+            "Audit existing raw SQL queries",
+            "Use ORM for complex queries",
+            "Add SQL injection tests"
+          ]
+        },
+        {
+          "id": "db_002",
+          "requirement": "Implement database access control",
+          "status": "PENDING",
+          "priority": "HIGH",
+          "effort": "2 hours",
+          "description": "Restrict database user permissions",
+          "implementation": [
+            "Create limited DB user (no superuser)",
+            "Grant only required permissions",
+            "Use separate read-only user for analytics",
+            "Restrict export/backup operations"
+          ]
+        },
+        {
+          "id": "db_003",
+          "requirement": "Enable database encryption",
+          "status": "PENDING",
+          "priority": "HIGH",
+          "effort": "1 hour",
+          "description": "Encrypt database in transit and at rest",
+          "implementation": [
+            "Enable SSL/TLS for connections",
+            "Enable transparent data encryption (TDE)",
+            "Encrypt backups",
+            "Use strong encryption algorithms (AES-256)"
+          ]
+        }
+      ]
+    },
+    "Secrets Management": {
+      "items": [
+        {
+          "id": "sec_001",
+          "requirement": "Implement secrets management",
+          "status": "PENDING",
+          "priority": "CRITICAL",
+          "effort": "3 hours",
+          "description": "Secure storage for API keys and credentials",
+          "implementation": [
+            "Use HashiCorp Vault or AWS Secrets Manager",
+            "Never commit secrets to git",
+            "Rotate secrets regularly (30 days)",
+            "Audit secret access",
+            "Use .env files locally with .gitignore"
+          ]
+        },
+        {
+          "id": "sec_002",
+          "requirement": "Secure API credentials",
+          "status": "PENDING",
+          "priority": "CRITICAL",
+          "effort": "2 hours",
+          "description": "Store WB_CN and Ozon RU API keys securely",
+          "implementation": [
+            "Move all API keys to Vault",
+            "Implement key rotation",
+            "Log key usage",
+            "Alert on suspicious access patterns"
+          ]
+        }
+      ]
+    },
+    "Web Application Security": {
+      "items": [
+        {
+          "id": "web_001",
+          "requirement": "Prevent XSS attacks",
+          "status": "PENDING",
+          "priority": "HIGH",
+          "effort": "2 hours",
+          "description": "Protect dashboard from XSS",
+          "implementation": [
+            "Escape all user inputs in HTML",
+            "Use Content Security Policy (CSP) headers",
+            "Sanitize chart.js data sources",
+            "Disable inline scripts"
+          ]
+        },
+        {
+          "id": "web_002",
+          "requirement": "Add security headers",
+          "status": "PENDING",
+          "priority": "HIGH",
+          "effort": "1 hour",
+          "description": "Add security headers to all responses",
+          "implementation": [
+            "X-Frame-Options: DENY",
+            "X-Content-Type-Options: nosniff",
+            "X-XSS-Protection: 1; mode=block",
+            "Strict-Transport-Security: max-age=31536000"
+          ]
+        }
+      ]
+    },
+    "Logging & Monitoring": {
+      "items": [
+        {
+          "id": "log_001",
+          "requirement": "Add security event logging",
+          "status": "PENDING",
+          "priority": "HIGH",
+          "effort": "2 hours",
+          "description": "Log authentication, authorization, and suspicious events",
+          "implementation": [
+            "Log all authentication attempts",
+            "Log failed authorization",
+            "Log high-value operations",
+            "Log security exceptions",
+            "Encrypt log files"
+          ]
+        },
+        {
+          "id": "log_002",
+          "requirement": "Implement audit trail",
+          "status": "PENDING",
+          "priority": "MEDIUM",
+          "effort": "3 hours",
+          "description": "Track all user actions for compliance",
+          "implementation": [
+            "Log all API calls with user ID",
+            "Log all data modifications",
+            "Track approval workflow actions",
+            "Maintain immutable audit logs"
+          ]
+        }
+      ]
+    },
+    "Infrastructure Security": {
+      "items": [
+        {
+          "id": "infra_001",
+          "requirement": "Configure firewalls",
+          "status": "PENDING",
+          "priority": "CRITICAL",
+          "effort": "2 hours",
+          "description": "Restrict network access",
+          "implementation": [
+            "Allow only required ports (443, 5432, etc)",
+            "Implement IP whitelisting",
+            "Use VPN for admin access",
+            "Configure WAF rules"
+          ]
+        },
+        {
+          "id": "infra_002",
+          "requirement": "Enable SSL/TLS certificates",
+          "status": "PENDING",
+          "priority": "CRITICAL",
+          "effort": "2 hours",
+          "description": "Encrypt all communications",
+          "implementation": [
+            "Use Let's Encrypt certificates",
+            "Enable HTTPS everywhere",
+            "Redirect HTTP to HTTPS",
+            "Use TLS 1.2+"
+          ]
+        }
+      ]
+    },
+    "Backup & Recovery": {
+      "items": [
+        {
+          "id": "backup_001",
+          "requirement": "Implement encrypted backups",
+          "status": "PENDING",
+          "priority": "CRITICAL",
+          "effort": "2 hours",
+          "description": "Regular encrypted database backups",
+          "implementation": [
+            "Daily full backups",
+            "Weekly full backup (archive)",
+            "Monthly backup offsite",
+            "Encrypt backups with AES-256",
+            "Test restore procedures monthly"
+          ]
+        }
+      ]
+    }
+  }
+}

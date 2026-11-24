@@ -1,0 +1,131 @@
+{
+  "firewall_rules": {
+    "ingress": [
+      {
+        "port": 443,
+        "protocol": "tcp",
+        "source": "0.0.0.0/0",
+        "description": "HTTPS - Allow from anywhere"
+      },
+      {
+        "port": 80,
+        "protocol": "tcp",
+        "source": "0.0.0.0/0",
+        "description": "HTTP - Redirect to HTTPS"
+      },
+      {
+        "port": 22,
+        "protocol": "tcp",
+        "source": "10.0.0.0/8",
+        "description": "SSH - Admin only from internal"
+      },
+      {
+        "port": 5432,
+        "protocol": "tcp",
+        "source": "10.1.0.0/16",
+        "description": "PostgreSQL - Database cluster only"
+      }
+    ],
+    "egress": [
+      {
+        "port": 443,
+        "protocol": "tcp",
+        "destination": "0.0.0.0/0",
+        "description": "HTTPS - Outbound to anywhere"
+      },
+      {
+        "port": 53,
+        "protocol": "udp",
+        "destination": "0.0.0.0/0",
+        "description": "DNS queries"
+      },
+      {
+        "port": 5432,
+        "protocol": "tcp",
+        "destination": "10.1.0.0/16",
+        "description": "Database access"
+      }
+    ],
+    "waf_rules": [
+      {
+        "rule_id": "waf_001",
+        "name": "SQL Injection Detection",
+        "pattern": "(?i)(union|select|insert|update|delete|drop|create|alter)",
+        "action": "block"
+      },
+      {
+        "rule_id": "waf_002",
+        "name": "XSS Pattern Detection",
+        "pattern": "(?i)(<script|javascript:|onerror|onclick)",
+        "action": "block"
+      },
+      {
+        "rule_id": "waf_003",
+        "name": "Path Traversal Detection",
+        "pattern": "(\\.\\./|\\.\\.\\\\|%2e%2e|%252e)",
+        "action": "block"
+      }
+    ]
+  },
+  "tls_configuration": {
+    "min_tls_version": "1.2",
+    "preferred_tls_version": "1.3",
+    "cipher_suites": [
+      "ECDHE-RSA-AES256-GCM-SHA384",
+      "ECDHE-RSA-AES128-GCM-SHA256",
+      "ECDHE-RSA-CHACHA20-POLY1305",
+      "DHE-RSA-AES256-GCM-SHA384",
+      "DHE-RSA-AES128-GCM-SHA256"
+    ],
+    "certificate_chain": "enabled",
+    "session_caching": "enabled",
+    "session_timeout_seconds": 3600,
+    "stapling_enabled": true
+  },
+  "http_redirect": {
+    "http_port": "80",
+    "https_port": "443",
+    "redirect_type": "permanent",
+    "strict_transport_security": "max-age=31536000; includeSubDomains; preload"
+  },
+  "csp_headers": {
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'nonce-e221d87a5eb94025817f206bf56dc5ad' cdn.jsdelivr.net; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' api.example.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "X-XSS-Protection": "1; mode=block",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "geolocation=(), microphone=(), camera=(), payment=()"
+  },
+  "certificates": {
+    "ecom.example.com": {
+      "domain": "ecom.example.com",
+      "provider": "let_encrypt",
+      "algorithm": "RSA-2048",
+      "encryption": "TLS 1.2+",
+      "auto_renewal": true,
+      "renewal_days_before": 30,
+      "created": "2026-11-20T12:37:50.008055+00:00",
+      "expires": "2027-11-20T12:37:50.008056+00:00"
+    },
+    "api.example.com": {
+      "domain": "api.example.com",
+      "provider": "let_encrypt",
+      "algorithm": "RSA-2048",
+      "encryption": "TLS 1.2+",
+      "auto_renewal": true,
+      "renewal_days_before": 30,
+      "created": "2026-11-20T12:37:50.008060+00:00",
+      "expires": "2027-11-20T12:37:50.008061+00:00"
+    },
+    "admin.example.com": {
+      "domain": "admin.example.com",
+      "provider": "let_encrypt",
+      "algorithm": "RSA-2048",
+      "encryption": "TLS 1.2+",
+      "auto_renewal": true,
+      "renewal_days_before": 30,
+      "created": "2026-11-20T12:37:50.008063+00:00",
+      "expires": "2027-11-20T12:37:50.008064+00:00"
+    }
+  }
+}

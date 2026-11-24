@@ -1,0 +1,314 @@
+# Default values for ru-ecom-ops Helm chart
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: ru-ecom-ops
+
+# Global settings
+global:
+  environment: production
+  domain: example.com
+
+# Prometheus Configuration
+prometheus:
+  enabled: true
+  replicaCount: 2
+
+  image:
+    repository: prom/prometheus
+    tag: v2.45.0
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 9090
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+
+  persistence:
+    enabled: true
+    storageClassName: standard
+    size: 50Gi
+    accessMode: ReadWriteOnce
+
+  retention:
+    time: 30d
+    size: 50GB
+
+  # Scrape configuration
+  scrapeInterval: 15s
+  evaluationInterval: 15s
+
+  # External labels
+  externalLabels:
+    cluster: ru-ecom-ops-prod
+    environment: production
+
+  # Health probes
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  # Pod anti-affinity for HA
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - prometheus
+            topologyKey: kubernetes.io/hostname
+
+# Alertmanager Configuration
+alertmanager:
+  enabled: true
+  replicaCount: 2
+
+  image:
+    repository: prom/alertmanager
+    tag: v0.26.0
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 9093
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  persistence:
+    enabled: true
+    storageClassName: standard
+    size: 10Gi
+    accessMode: ReadWriteOnce
+
+  # Health probes
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  # Pod anti-affinity for HA
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - alertmanager
+            topologyKey: kubernetes.io/hostname
+
+  # Alert routing configuration
+  routing:
+    groupWait: 10s
+    groupInterval: 10s
+    repeatInterval: 12h
+    routes:
+      - severity: critical
+        groupWait: 0s
+        repeatInterval: 1h
+      - severity: warning
+        groupWait: 30s
+        repeatInterval: 4h
+      - severity: info
+        repeatInterval: 24h
+
+  # Slack integration
+  slack:
+    enabled: true
+    webhookUrlSecret: alertmanager-secrets
+    webhookUrlKey: slack-webhook-url
+    channels:
+      default: "#alerts"
+      critical: "#critical-alerts"
+      info: "#monitoring"
+
+  # PagerDuty integration (optional)
+  pagerduty:
+    enabled: false
+    routingKeySecret: alertmanager-secrets
+    routingKeyKey: pagerduty-routing-key
+
+  # Email integration (optional)
+  email:
+    enabled: false
+    smtpHost: smtp.example.com
+    smtpPort: 587
+    from: alertmanager@example.com
+
+# Alert Rules Configuration
+alertRules:
+  enabled: true
+  interval: 15s
+
+  # Alert thresholds - customize per environment
+  podCrashing:
+    enabled: true
+    severity: critical
+
+  highErrorRate:
+    enabled: true
+    severity: warning
+    threshold: 0.05
+    duration: 5m
+
+  highRequestLatency:
+    enabled: true
+    severity: warning
+    threshold: 0.5  # 500ms
+    duration: 5m
+
+  highMemoryUsage:
+    enabled: true
+    severity: warning
+    threshold: 0.8  # 80%
+    duration: 5m
+
+  cpuThrottling:
+    enabled: true
+    severity: warning
+    threshold: 0.1  # 10%
+    duration: 5m
+
+  persistentVolumeFull:
+    enabled: true
+    severity: warning
+    threshold: 0.8  # 80%
+    duration: 5m
+
+  databaseConnectionError:
+    enabled: true
+    severity: critical
+    duration: 2m
+
+  circuitBreakerOpen:
+    enabled: true
+    severity: critical
+    duration: 2m
+
+  serviceDown:
+    enabled: true
+    severity: critical
+    duration: 2m
+
+  deploymentReplicasMismatch:
+    enabled: true
+    severity: warning
+    duration: 5m
+
+# Recording Rules Configuration
+recordingRules:
+  enabled: true
+  interval: 15s
+
+# Security Context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  fsGroup: 65534
+
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+
+# Update strategy
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# Log level
+logLevel: info
+
+# Environment-specific overrides
+development:
+  prometheus:
+    retention:
+      time: 7d
+      size: 10GB
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  alertmanager:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+  alertRules:
+    highErrorRate:
+      threshold: 0.10  # Relaxed to 10% in dev
+    highRequestLatency:
+      threshold: 1.0   # Relaxed to 1 second in dev
+
+staging:
+  prometheus:
+    retention:
+      time: 14d
+      size: 25GB
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+
+  alertmanager:
+    resources:
+      requests:
+        cpu: 75m
+        memory: 96Mi
+      limits:
+        cpu: 300m
+        memory: 384Mi
+
+  alertRules:
+    highErrorRate:
+      threshold: 0.075  # Slightly relaxed to 7.5% in staging

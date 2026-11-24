@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-24T02:57:28.234400+00:00",
+  "total_orders_analyzed": 2,
+  "orders_with_anomalies": 0,
+  "total_anomalies_detected": 0,
+  "severity_breakdown": {
+    "p0_immediate": 0,
+    "p1_hourly": 0,
+    "p2_daily": 0
+  },
+  "category_breakdown": {
+    "timing_anomalies": 0,
+    "state_transition_anomalies": 0,
+    "data_quality_anomalies": 0,
+    "reconciliation_anomalies": 0
+  },
+  "anomalies": []
+}

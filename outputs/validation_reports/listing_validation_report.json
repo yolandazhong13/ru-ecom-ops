@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-11-20T07:01:01.910020+00:00",
+  "summary": {
+    "total_validations": 1,
+    "valid": 1,
+    "invalid": 0,
+    "warning": 0,
+    "overall_pass_rate": 100.0
+  },
+  "rule_statistics": {
+    "total_rules": 6,
+    "passed": 6,
+    "failed": 0,
+    "pass_rate": 100.0
+  },
+  "results": [
+    {
+      "schema_name": "execution_result",
+      "data_type": "execution_result",
+      "validation_status": "valid",
+      "passed_rules": 6,
+      "failed_rules": 0,
+      "warnings": 0,
+      "errors": [],
+      "warnings_list": [],
+      "timestamp": "2026-11-20T07:01:01.910000+00:00",
+      "total_rules": 6,
+      "success_rate": 100.0
+    }
+  ]
+}

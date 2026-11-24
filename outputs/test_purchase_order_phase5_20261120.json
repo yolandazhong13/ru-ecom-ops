@@ -1,0 +1,24 @@
+{
+  "task_id": "test-purchase-order-phase5-wb-cn-20261120",
+  "action_type": "purchase_order",
+  "platform": "WB_CN",
+  "p02_status": "verified",
+  "p02_content_hash": "1debdd1fc1444e7891a33f1742cdb4ab42491493a54d99504c274bda3db312e6",
+  "execution_status": "executed",
+  "error": null,
+  "verification": {
+    "validation_checks": {
+      "orders_generated": true,
+      "quantities_valid": true,
+      "costs_calculated": true,
+      "no_zero_quantities": true,
+      "cost_totals_match": true
+    },
+    "error_details": [],
+    "order_count": 2,
+    "total_cost": 1338000,
+    "overall_status": "verified_purchase_orders",
+    "all_valid": true
+  },
+  "timestamp": "2026-11-20T07:14:52.094321+00:00"
+}

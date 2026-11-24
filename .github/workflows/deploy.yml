@@ -1,0 +1,324 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - develop
+  pull_request:
+    branches:
+      - main
+      - staging
+      - develop
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  DOCKER_BUILDKIT: 1
+
+jobs:
+  # Job 1: Test application
+  test:
+    name: Test Application
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test -- --coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: unittests
+
+  # Job 2: Build and push Docker image
+  build:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push'
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Job 3: Deploy to staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging-ecom-ops.example.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.27.0'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Create namespace
+        run: |
+          kubectl create namespace ru-ecom-ops --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create docker registry secret
+        run: |
+          kubectl create secret docker-registry ghcr-secret \
+            --docker-server=${{ env.REGISTRY }} \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GITHUB_TOKEN }} \
+            --docker-email=${{ github.actor }}@users.noreply.github.com \
+            -n ru-ecom-ops \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create ConfigMap
+        run: |
+          kubectl create configmap ru-ecom-ops-config \
+            --from-env-file=.env.staging \
+            -n ru-ecom-ops \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create Secrets from GitHub Secrets
+        run: |
+          kubectl create secret generic ru-ecom-ops-secrets \
+            --from-literal=slack-webhook-url='${{ secrets.SLACK_WEBHOOK_URL_STAGING }}' \
+            --from-literal=smtp-server='${{ secrets.SMTP_SERVER_STAGING }}' \
+            --from-literal=smtp-port='${{ secrets.SMTP_PORT_STAGING }}' \
+            --from-literal=smtp-user='${{ secrets.SMTP_USER_STAGING }}' \
+            --from-literal=smtp-password='${{ secrets.SMTP_PASSWORD_STAGING }}' \
+            --from-literal=alert-email='${{ secrets.ALERT_EMAIL_STAGING }}' \
+            -n ru-ecom-ops \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/ -n ru-ecom-ops
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/ru-ecom-ops \
+            -n ru-ecom-ops \
+            --timeout=5m
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n ru-ecom-ops -o wide
+          kubectl get services -n ru-ecom-ops
+
+      - name: Run smoke tests
+        run: |
+          # Wait for service to be ready
+          kubectl wait --for=condition=ready pod \
+            -l app=ru-ecom-ops \
+            -n ru-ecom-ops \
+            --timeout=300s
+
+          # Port forward to service
+          kubectl port-forward -n ru-ecom-ops svc/ru-ecom-ops-app 5000:5000 &
+          sleep 3
+
+          # Test health endpoint
+          curl -f http://localhost:5000/health || exit 1
+
+      - name: Notify Slack (success)
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Staging deployment successful'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL_STAGING }}
+          fields: repo,message,commit,author
+
+      - name: Notify Slack (failure)
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Staging deployment failed'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL_STAGING }}
+          fields: repo,message,commit,author
+
+  # Job 4: Deploy to production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://ecom-ops.example.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.27.0'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Create namespace
+        run: |
+          kubectl create namespace ru-ecom-ops --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create docker registry secret
+        run: |
+          kubectl create secret docker-registry ghcr-secret \
+            --docker-server=${{ env.REGISTRY }} \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GITHUB_TOKEN }} \
+            --docker-email=${{ github.actor }}@users.noreply.github.com \
+            -n ru-ecom-ops \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create ConfigMap
+        run: |
+          kubectl create configmap ru-ecom-ops-config \
+            --from-env-file=.env.production \
+            -n ru-ecom-ops \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create Secrets from GitHub Secrets
+        run: |
+          kubectl create secret generic ru-ecom-ops-secrets \
+            --from-literal=slack-webhook-url='${{ secrets.SLACK_WEBHOOK_URL_PRODUCTION }}' \
+            --from-literal=smtp-server='${{ secrets.SMTP_SERVER_PRODUCTION }}' \
+            --from-literal=smtp-port='${{ secrets.SMTP_PORT_PRODUCTION }}' \
+            --from-literal=smtp-user='${{ secrets.SMTP_USER_PRODUCTION }}' \
+            --from-literal=smtp-password='${{ secrets.SMTP_PASSWORD_PRODUCTION }}' \
+            --from-literal=alert-email='${{ secrets.ALERT_EMAIL_PRODUCTION }}' \
+            -n ru-ecom-ops \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/ -n ru-ecom-ops
+
+      - name: Wait for rollout (5m timeout)
+        run: |
+          kubectl rollout status deployment/ru-ecom-ops \
+            -n ru-ecom-ops \
+            --timeout=5m
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n ru-ecom-ops -o wide
+          kubectl get services -n ru-ecom-ops
+          kubectl get ingress -n ru-ecom-ops
+
+      - name: Run health checks
+        run: |
+          # Wait for service to be ready
+          kubectl wait --for=condition=ready pod \
+            -l app=ru-ecom-ops \
+            -n ru-ecom-ops \
+            --timeout=300s
+
+          # Port forward to service
+          kubectl port-forward -n ru-ecom-ops svc/ru-ecom-ops-app 5000:5000 &
+          sleep 3
+
+          # Test health and metrics endpoints
+          curl -f http://localhost:5000/health || exit 1
+          curl -f http://localhost:5000/metrics || exit 1
+
+      - name: Notify Slack (success)
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment successful - ${{ github.sha }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL_PRODUCTION }}
+          fields: repo,message,commit,author
+
+      - name: Notify Slack (failure)
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment failed - ${{ github.sha }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL_PRODUCTION }}
+          fields: repo,message,commit,author
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Initiating rollback..."
+          kubectl rollout undo deployment/ru-ecom-ops \
+            -n ru-ecom-ops
+          kubectl rollout status deployment/ru-ecom-ops \
+            -n ru-ecom-ops \
+            --timeout=5m

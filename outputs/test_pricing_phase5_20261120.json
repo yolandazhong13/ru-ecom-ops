@@ -1,0 +1,23 @@
+{
+  "task_id": "test-pricing-phase5-wb-cn-20261120",
+  "action_type": "pricing_update",
+  "platform": "WB_CN",
+  "p02_status": "verified",
+  "p02_content_hash": "1d53e05ea5254a57cf0d6a90b5cc7c73a3adc41b63be81ae581d3708fb429be2",
+  "execution_status": "executed",
+  "error": null,
+  "verification": {
+    "validation_checks": {
+      "prices_updated": true,
+      "min_prices_valid": true,
+      "margins_above_target": true,
+      "no_zero_prices": true,
+      "price_consistency": true
+    },
+    "error_details": [],
+    "sku_count": 2,
+    "overall_status": "verified_pricing_updates",
+    "all_valid": true
+  },
+  "timestamp": "2026-11-20T07:14:52.035823+00:00"
+}

@@ -1,0 +1,103 @@
+{
+  "generated_at": "2026-11-20T07:01:27.016626+00:00",
+  "unified_status": {
+    "timestamp": "2026-11-20T07:01:27.016642+00:00",
+    "overall_status": "🟢 HEALTHY",
+    "dimensions": {
+      "execution_health": {
+        "overall_status": "healthy",
+        "total_modules": 2,
+        "module_status_distribution": {
+          "healthy": 2
+        },
+        "total_executions": 2,
+        "total_successful": 2,
+        "total_failed": 0,
+        "overall_success_rate": 100.0,
+        "overall_error_rate": 0.0,
+        "alerts": [],
+        "updated_at": "2026-11-20T07:01:27.016631+00:00"
+      },
+      "api_integration": {
+        "overall_status": "available",
+        "total_platforms": 1,
+        "total_endpoints": 2,
+        "total_calls": 2,
+        "total_successful": 2,
+        "total_failed": 0,
+        "overall_error_rate": 0.0,
+        "by_platform": {
+          "Ozon RU": {
+            "endpoints": 2,
+            "total_calls": 2,
+            "successful": 2,
+            "failed": 0,
+            "error_rate": 0.0,
+            "status": "available"
+          }
+        },
+        "alerts": [],
+        "updated_at": "2026-11-20T07:01:27.016637+00:00"
+      },
+      "data_quality": {
+        "total_validations": 0,
+        "valid": 0,
+        "invalid": 0,
+        "warning": 0,
+        "overall_pass_rate": 0
+      }
+    }
+  },
+  "execution_health": {
+    "overall_status": "healthy",
+    "total_modules": 2,
+    "module_status_distribution": {
+      "healthy": 2
+    },
+    "total_executions": 2,
+    "total_successful": 2,
+    "total_failed": 0,
+    "overall_success_rate": 100.0,
+    "overall_error_rate": 0.0,
+    "alerts": [],
+    "updated_at": "2026-11-20T07:01:27.016646+00:00"
+  },
+  "api_integration": {
+    "overall_status": "available",
+    "total_platforms": 1,
+    "total_endpoints": 2,
+    "total_calls": 2,
+    "total_successful": 2,
+    "total_failed": 0,
+    "overall_error_rate": 0.0,
+    "by_platform": {
+      "Ozon RU": {
+        "endpoints": 2,
+        "total_calls": 2,
+        "successful": 2,
+        "failed": 0,
+        "error_rate": 0.0,
+        "status": "available"
+      }
+    },
+    "alerts": [],
+    "updated_at": "2026-11-20T07:01:27.016650+00:00"
+  },
+  "data_quality": {
+    "generated_at": "2026-11-20T07:01:27.016652+00:00",
+    "summary": {
+      "total_validations": 0,
+      "valid": 0,
+      "invalid": 0,
+      "warning": 0,
+      "overall_pass_rate": 0
+    },
+    "rule_statistics": {
+      "total_rules": 0,
+      "passed": 0,
+      "failed": 0,
+      "pass_rate": 0
+    },
+    "results": []
+  }
+}

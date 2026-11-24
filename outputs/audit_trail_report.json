@@ -1,0 +1,125 @@
+{
+  "timestamp": "2026-11-24T03:29:23.916581+00:00",
+  "total_orders": 2,
+  "total_events": 7,
+  "trails": [
+    {
+      "order_id": "WB_12345678",
+      "platform": "WB_CN",
+      "created_at": "2026-11-23T12:28:02.789975+00:00",
+      "last_modified": "2026-11-23T12:28:02.789847+00:00",
+      "event_count": 4,
+      "events": [
+        {
+          "event_type": "order_created",
+          "order_id": "WB_12345678",
+          "platform": "WB_CN",
+          "timestamp": "2026-11-23T12:28:02.789975+00:00",
+          "details": {
+            "shop_id": "250146669",
+            "amount": 1500.0,
+            "currency": "RUB",
+            "platform_state": "pending"
+          },
+          "old_value": null,
+          "new_value": null,
+          "actor": "system"
+        },
+        {
+          "event_type": "state_transition",
+          "order_id": "WB_12345678",
+          "platform": "WB_CN",
+          "timestamp": "2026-11-23T12:28:02.789847+00:00",
+          "details": {
+            "reason": "State normalized from platform"
+          },
+          "old_value": "pending",
+          "new_value": "paid",
+          "actor": "system"
+        },
+        {
+          "event_type": "reconciliation_checked",
+          "order_id": "WB_12345678",
+          "platform": "WB_CN",
+          "timestamp": "2026-11-23T12:28:02.789847+00:00",
+          "details": {
+            "reconciliation_status": "pending",
+            "matched_on_platform": false,
+            "missing_flag": false
+          },
+          "old_value": null,
+          "new_value": null,
+          "actor": "system"
+        },
+        {
+          "event_type": "status_updated",
+          "order_id": "WB_12345678",
+          "platform": "WB_CN",
+          "timestamp": "2026-11-23T12:28:02.789847+00:00",
+          "details": {
+            "current_state": "paid",
+            "total_amount": 1500.0,
+            "payment_confirmed": true,
+            "delivered": false
+          },
+          "old_value": null,
+          "new_value": "paid",
+          "actor": "system"
+        }
+      ]
+    },
+    {
+      "order_id": "OZ_87654321",
+      "platform": "Ozon",
+      "created_at": "2026-11-23T12:28:02.789981+00:00",
+      "last_modified": "2026-11-23T12:28:02.789980+00:00",
+      "event_count": 3,
+      "events": [
+        {
+          "event_type": "order_created",
+          "order_id": "OZ_87654321",
+          "platform": "Ozon",
+          "timestamp": "2026-11-23T12:28:02.789981+00:00",
+          "details": {
+            "shop_id": "6182781",
+            "amount": 2500.0,
+            "currency": "RUB",
+            "platform_state": "shipped"
+          },
+          "old_value": null,
+          "new_value": null,
+          "actor": "system"
+        },
+        {
+          "event_type": "reconciliation_checked",
+          "order_id": "OZ_87654321",
+          "platform": "Ozon",
+          "timestamp": "2026-11-23T12:28:02.789980+00:00",
+          "details": {
+            "reconciliation_status": "pending",
+            "matched_on_platform": false,
+            "missing_flag": false
+          },
+          "old_value": null,
+          "new_value": null,
+          "actor": "system"
+        },
+        {
+          "event_type": "status_updated",
+          "order_id": "OZ_87654321",
+          "platform": "Ozon",
+          "timestamp": "2026-11-23T12:28:02.789980+00:00",
+          "details": {
+            "current_state": "shipped",
+            "total_amount": 2500.0,
+            "payment_confirmed": true,
+            "delivered": false
+          },
+          "old_value": null,
+          "new_value": "shipped",
+          "actor": "system"
+        }
+      ]
+    }
+  ]
+}

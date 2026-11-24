@@ -1,0 +1,51 @@
+{
+  "timestamp": "2026-11-24T02:47:52.829108+00:00",
+  "test_name": "Phase 2.5 Integration Test",
+  "components_tested": 5,
+  "synthetic_orders_created": 50,
+  "results": {
+    "order_tracking": {
+      "ledger_entries": 52,
+      "batch_add_result": {
+        "added_count": 50,
+        "updated_count": 0,
+        "error_count": 0
+      }
+    },
+    "anomaly_detection": {
+      "orders_analyzed": 52,
+      "anomalies_found": 14,
+      "severity_breakdown": {
+        "p0": 5,
+        "p1": 9,
+        "p2": 0
+      }
+    },
+    "alert_dispatch": {
+      "anomalies_processed": 0,
+      "alerts_dispatched": 0,
+      "alerts_failed": 0
+    },
+    "billing_aggregation": {
+      "total_orders": 2,
+      "total_amount_rub": 11730.289999999999,
+      "shops_included": 2,
+      "platforms": [
+        "WB_CN"
+      ]
+    },
+    "reconciliation": {
+      "ledger_orders": 52,
+      "platform_orders": 0,
+      "discrepancies": 52,
+      "matched_orders": 0
+    }
+  },
+  "output_files": [
+    "order_ledger.json",
+    "anomaly_detection_report.json",
+    "alert_dispatch_report.json",
+    "billing_report_daily.json",
+    "reconciliation_report.json"
+  ]
+}

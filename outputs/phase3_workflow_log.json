@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-11-24T03:16:41.425482+00:00",
+  "steps": [
+    {
+      "step": "trend_analysis",
+      "status": "completed",
+      "period_days": 30,
+      "total_orders": 2,
+      "total_anomalies": 0,
+      "anomaly_rate_pct": 0.0,
+      "orders_per_day_avg": 0.06451612903225806
+    },
+    {
+      "step": "sla_compliance",
+      "status": "completed",
+      "orders_analyzed": 2,
+      "overall_compliance_pct": 100.0,
+      "total_violations": 0,
+      "sla_metrics_count": 3
+    },
+    {
+      "step": "predictive_analysis",
+      "status": "completed",
+      "total_predictions": 0,
+      "high_risk_count": 0,
+      "medium_risk_count": 0,
+      "low_risk_count": 0
+    }
+  ],
+  "status": "success"
+}

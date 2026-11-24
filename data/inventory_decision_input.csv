@@ -1,0 +1,7 @@
+sku,platform,location,available_qty,in_transit_qty,locked_qty
+MD-4090 PRO,WB_CN,WB_CN_Online,37,0,0
+MD-4090 PRO,WB_CN,WB_CN_Reserve,10,0,0
+MD-700,WB_CN,WB_CN_Online,131,0,0
+MD-700,WB_CN,WB_CN_Reserve,150,0,0
+TX-850 PRO,WB_CN,WB_CN_Online,29,0,0
+TX-850 PRO,WB_CN,WB_CN_Reserve,24,0,0

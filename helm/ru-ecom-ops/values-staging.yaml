@@ -1,0 +1,221 @@
+# Staging Environment Overrides
+# Moderate resources, intermediate thresholds
+
+global:
+  environment: staging
+
+namespace: ru-ecom-ops
+
+prometheus:
+  replicaCount: 2
+  image:
+    repository: prom/prometheus
+    tag: v2.45.0
+    pullPolicy: IfNotPresent
+
+  retention:
+    time: 14d
+    size: 25Gi
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  persistence:
+    enabled: true
+    storageClassName: standard
+    accessMode: ReadWriteOnce
+    size: 25Gi
+
+  service:
+    type: ClusterIP
+    port: 9090
+
+  scrapeInterval: 30s
+  evaluationInterval: 30s
+
+  externalLabels:
+    cluster: staging
+    environment: staging
+
+  livenessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - prometheus
+            topologyKey: kubernetes.io/hostname
+
+alertmanager:
+  replicaCount: 2
+  image:
+    repository: prom/alertmanager
+    tag: v0.26.0
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  persistence:
+    enabled: true
+    storageClassName: standard
+    accessMode: ReadWriteOnce
+    size: 5Gi
+
+  service:
+    type: ClusterIP
+    port: 9093
+
+  slack:
+    enabled: true
+    webhookUrlSecret: alertmanager-secrets
+    webhookUrlKey: slack-webhook-url
+    channels:
+      default: '#alerts-staging'
+      critical: '#alerts-critical-staging'
+      info: '#monitoring-staging'
+
+  pagerduty:
+    enabled: true
+    routingKeySecret: alertmanager-pagerduty
+    routingKeyKey: pagerduty-routing-key
+
+  routing:
+    groupWait: 20s
+    groupInterval: 3m
+    repeatInterval: 6h
+    routes:
+      - groupWait: 10s
+        repeatInterval: 1h
+      - groupWait: 1m
+        repeatInterval: 2h
+      - repeatInterval: 24h
+
+  livenessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - alertmanager
+            topologyKey: kubernetes.io/hostname
+
+recordingRules:
+  interval: 30s
+
+alertRules:
+  interval: 30s
+
+  # Staging: Intermediate thresholds
+  podCrashing:
+    enabled: true
+    severity: warning
+
+  highErrorRate:
+    enabled: true
+    threshold: 0.05  # 5% error rate
+    duration: 5m
+    severity: warning
+
+  highRequestLatency:
+    enabled: true
+    threshold: 0.5  # 500ms
+    duration: 5m
+    severity: warning
+
+  highMemoryUsage:
+    enabled: true
+    threshold: 0.80  # 80% of limit
+    duration: 5m
+    severity: warning
+
+  cpuThrottling:
+    enabled: true
+    threshold: 0.3  # 30% throttling
+    duration: 5m
+    severity: warning
+
+  persistentVolumeFull:
+    enabled: true
+    threshold: 0.80  # 80% full
+    duration: 5m
+    severity: warning
+
+  databaseConnectionError:
+    enabled: true
+    duration: 5m
+    severity: warning
+
+  circuitBreakerOpen:
+    enabled: true
+    duration: 2m
+    severity: warning
+
+  serviceDown:
+    enabled: true
+    duration: 2m
+    severity: warning
+
+  deploymentReplicasMismatch:
+    enabled: true
+    duration: 5m
+    severity: warning
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  fsGroup: 65534
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+logLevel: info

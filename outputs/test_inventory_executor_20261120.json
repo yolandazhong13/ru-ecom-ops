@@ -1,0 +1,25 @@
+{
+  "task_id": "test-inventory-executor-ru-ecom-ops-20261120",
+  "action_type": "inventory_update",
+  "platform": "WB_CN",
+  "p02_status": "verified",
+  "p02_content_hash": "05adc14bd11e112a285dc1365e58e386a0b20ba6965f7134e1d4959636aa9425",
+  "execution_status": "executed",
+  "error": null,
+  "verification": {
+    "validation_checks": {
+      "csv_exists": true,
+      "csv_readable": true,
+      "all_rows_have_required_columns": true,
+      "all_sku_mappings_valid": true,
+      "all_numeric_fields_valid": true,
+      "row_count_increased_or_stable": true
+    },
+    "error_details": [],
+    "row_count_delta": 0,
+    "sku_count": 3,
+    "overall_status": "verified_inventory_aggregation",
+    "all_valid": true
+  },
+  "timestamp": "2026-11-20T06:34:36.430495+00:00"
+}

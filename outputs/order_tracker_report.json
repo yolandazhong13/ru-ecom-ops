@@ -1,0 +1,68 @@
+{
+  "timestamp": "2026-11-24T02:04:27.321209+00:00",
+  "total_duration_ms": 0,
+  "sync_results": [
+    {
+      "timestamp": "2026-11-24T02:04:27.321198+00:00",
+      "platform": "WB_CN",
+      "shop_id": "250146669",
+      "orders_fetched": 0,
+      "orders_processed": 0,
+      "orders_failed": 0,
+      "new_orders": 0,
+      "updated_orders": 0,
+      "anomalies_detected": 0,
+      "anomaly_details": [],
+      "duration_ms": 0,
+      "errors": []
+    },
+    {
+      "timestamp": "2026-11-24T02:04:27.321203+00:00",
+      "platform": "WB_CN",
+      "shop_id": "250146669",
+      "orders_fetched": 0,
+      "orders_processed": 0,
+      "orders_failed": 0,
+      "new_orders": 0,
+      "updated_orders": 0,
+      "anomalies_detected": 0,
+      "anomaly_details": [],
+      "duration_ms": 0,
+      "errors": []
+    },
+    {
+      "timestamp": "2026-11-24T02:04:27.321206+00:00",
+      "platform": "Ozon",
+      "shop_id": "6182781",
+      "orders_fetched": 0,
+      "orders_processed": 0,
+      "orders_failed": 0,
+      "new_orders": 0,
+      "updated_orders": 0,
+      "anomalies_detected": 0,
+      "anomaly_details": [],
+      "duration_ms": 0,
+      "errors": []
+    },
+    {
+      "timestamp": "2026-11-24T02:04:27.321207+00:00",
+      "platform": "Ozon",
+      "shop_id": "3521307",
+      "orders_fetched": 0,
+      "orders_processed": 0,
+      "orders_failed": 0,
+      "new_orders": 0,
+      "updated_orders": 0,
+      "anomalies_detected": 0,
+      "anomaly_details": [],
+      "duration_ms": 0,
+      "errors": []
+    }
+  ],
+  "total_fetched": 0,
+  "total_processed": 0,
+  "total_failed": 0,
+  "total_new": 0,
+  "total_updated": 0,
+  "total_anomalies": 0
+}

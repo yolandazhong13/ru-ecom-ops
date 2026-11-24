@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-11-24T02:57:28.233344+00:00",
+  "steps": [
+    {
+      "step": "order_tracking",
+      "status": "completed",
+      "fetched": 0,
+      "processed": 0,
+      "failed": 0,
+      "new_orders": 0,
+      "updated_orders": 0,
+      "anomalies": 0
+    },
+    {
+      "step": "anomaly_detection",
+      "status": "completed",
+      "total_analyzed": 2,
+      "anomalies_found": 0,
+      "p0_count": 0,
+      "p1_count": 0,
+      "p2_count": 0
+    },
+    {
+      "step": "alert_dispatch",
+      "status": "completed",
+      "alerts_dispatched": 0,
+      "alerts_failed": 0
+    },
+    {
+      "step": "billing_aggregation",
+      "status": "completed",
+      "total_orders": 0,
+      "total_amount": 0.0,
+      "shops_included": 0
+    },
+    {
+      "step": "reconciliation",
+      "status": "completed",
+      "ledger_orders": 2,
+      "platform_orders": 0,
+      "discrepancies": 2,
+      "matched": 0
+    }
+  ],
+  "status": "success",
+  "duration_seconds": 0.001526
+}
