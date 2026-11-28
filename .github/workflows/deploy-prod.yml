@@ -86,8 +86,8 @@ jobs:
 
       - name: Backup Current Release
         run: |
-          helm get values ru-ecom-ops -n ru-ecom-ops > backup-prod-values.yaml
-          helm get manifest ru-ecom-ops -n ru-ecom-ops > backup-prod-manifest.yaml
+          helm get values ru-ecom-ops -n ru-ecom-ops > backup-prod-values.yaml 2>/dev/null || echo "No existing release to back up" > backup-prod-values.yaml
+          helm get manifest ru-ecom-ops -n ru-ecom-ops > backup-prod-manifest.yaml 2>/dev/null || echo "No existing release to back up" > backup-prod-manifest.yaml
           echo "Backup created at $(date)"
 
       - name: Upload Backup
