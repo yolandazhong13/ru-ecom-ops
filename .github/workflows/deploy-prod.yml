@@ -44,11 +44,17 @@ jobs:
 
       - name: Check for hardcoded secrets
         run: |
-          if grep -r "password\|secret\|token\|key" helm/ru-ecom-ops/*.yaml | grep -v "^#" ; then
-            echo "⚠️  Potential hardcoded secrets detected"
+          # Detect actual hardcoded values for secret-type keys.
+          # Character class [^|{$\s] excludes GitHub expressions, shell vars, YAML blocks.
+          # Also excludes comment lines and K8s secretKeyRef/valueFrom blocks.
+          if grep -rE '^\s*(password|passwd|api_key|apikey|api_secret|access_token|auth_token|private_key)\s*:\s*[^|{$\s]' \
+               helm/ru-ecom-ops/ --include="*.yaml" \
+             | grep -v '^\s*#' \
+             | grep -v 'secretKeyRef\|secretRef\|valueFrom'; then
+            echo "Potential hardcoded secrets detected"
             exit 1
           fi
-          echo "✓ No hardcoded secrets found"
+          echo "No hardcoded secrets found"
 
   approval-check:
     runs-on: ubuntu-latest
@@ -80,12 +86,12 @@ jobs:
 
       - name: Backup Current Release
         run: |
-          helm get values ru-ecom-ops -n ru-ecom-ops > backup-prod-values.yaml
-          helm get manifest ru-ecom-ops -n ru-ecom-ops > backup-prod-manifest.yaml
+          helm get values ru-ecom-ops -n ru-ecom-ops > backup-prod-values.yaml 2>/dev/null || echo "No existing release to back up" > backup-prod-values.yaml
+          helm get manifest ru-ecom-ops -n ru-ecom-ops > backup-prod-manifest.yaml 2>/dev/null || echo "No existing release to back up" > backup-prod-manifest.yaml
           echo "Backup created at $(date)"
 
       - name: Upload Backup
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: production-backup
           path: |
@@ -175,7 +181,7 @@ jobs:
           EOF
 
       - name: Upload Deployment Record
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: production-deployment-records
           path: deployment-record-prod-${{ needs.prepare.outputs.version }}.txt

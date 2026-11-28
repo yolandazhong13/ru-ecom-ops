@@ -115,7 +115,7 @@ jobs:
           cat deployment-record-staging.txt
 
       - name: Upload Deployment Record
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: deployment-records
           path: deployment-record-staging.txt
