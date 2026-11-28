@@ -91,7 +91,7 @@ jobs:
           echo "Backup created at $(date)"
 
       - name: Upload Backup
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: production-backup
           path: |
@@ -181,7 +181,7 @@ jobs:
           EOF
 
       - name: Upload Deployment Record
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: production-deployment-records
           path: deployment-record-prod-${{ needs.prepare.outputs.version }}.txt
