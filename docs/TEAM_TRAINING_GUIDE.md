@@ -131,7 +131,13 @@ git push origin release/v1.2.0
 gh run list --workflow=deploy-staging.yml --limit=5
 
 # Approve the pending run
+# Approve the pending run (gh 2.63+ only):
 gh run review <RUN_ID> --approve --body "Approved for staging"
+# Or via GitHub UI: https://github.com/yolandazhong13/ru-ecom-ops/actions
+# Or via API (works with gh 2.47+):
+# ENVIRONMENT_ID=$(gh api repos/yolandazhong13/ru-ecom-ops/actions/runs/<RUN_ID>/pending_deployments --jq '.[0].environment.id')
+# gh api --method POST repos/yolandazhong13/ru-ecom-ops/actions/runs/<RUN_ID>/pending_deployments \
+#   --field "environment_ids[]=$ENVIRONMENT_ID" --field state=approved --field comment="Approved"
 ```
 
 ### Production Deployment (requires security scan + approval)
@@ -146,8 +152,13 @@ git push origin v1.2.0
 gh run list --workflow=deploy-prod.yml --limit=5
 gh run view <RUN_ID>
 
-# After security scan and backup complete, approve
+# After security scan and backup complete, approve (gh 2.63+ only):
 gh run review <RUN_ID> --approve --body "Approved for production"
+# Or via GitHub UI: https://github.com/yolandazhong13/ru-ecom-ops/actions
+# Or via API (works with gh 2.47+):
+# ENVIRONMENT_ID=$(gh api repos/yolandazhong13/ru-ecom-ops/actions/runs/<RUN_ID>/pending_deployments --jq '.[0].environment.id')
+# gh api --method POST repos/yolandazhong13/ru-ecom-ops/actions/runs/<RUN_ID>/pending_deployments \
+#   --field "environment_ids[]=$ENVIRONMENT_ID" --field state=approved --field comment="Approved"
 ```
 
 ---
@@ -283,6 +294,33 @@ The environment may not have the approval requirement configured. Check:
 1. GitHub → Repository → Settings → Environments → staging
 2. Enable "Required reviewers" and add your team
 
+### "current_user_can_approve: false" — cannot approve own deployment
+
+GitHub prevents the user who triggered a workflow run from approving their own deployment. This applies even when no required reviewers are configured on the environment.
+
+Options:
+1. **GitHub UI**: Ask a second team member with repo access to visit the run URL and approve via "Review deployments"
+2. **Add a reviewer**: Repository → Settings → Environments → production/staging → Required reviewers → add a second account
+3. **Wait timer only (no reviewers)**: With a wait timer and no required reviewers, GitHub auto-approves after the timer even without manual action — the `current_user_can_approve: false` just means you can't manually click approve; it proceeds automatically
+
+### "gh run review" — unknown command
+
+`gh run review` was introduced in gh 2.63. On older versions (e.g. 2.47.0), use the GitHub UI or the API directly:
+
+```bash
+# Get the environment ID for the waiting deployment:
+ENVIRONMENT_ID=$(gh api repos/yolandazhong13/ru-ecom-ops/actions/runs/<RUN_ID>/pending_deployments \
+  --jq '.[0].environment.id')
+
+# Approve:
+gh api --method POST repos/yolandazhong13/ru-ecom-ops/actions/runs/<RUN_ID>/pending_deployments \
+  --field "environment_ids[]=$ENVIRONMENT_ID" \
+  --field state=approved \
+  --field comment="Approved"
+```
+
+Note: this API call also fails with self-approval restriction. A second GitHub account is required for manual approval.
+
 ### Production security scan fails (Trivy findings)
 
 Review the Trivy report in the workflow logs. For test/validation environments, the security check is expected to report findings since this is a mock setup. For production:
@@ -389,7 +427,7 @@ gh run list --limit=10
 # Watch a running workflow
 gh run watch <RUN_ID>
 
-# Approve a waiting deployment
+# Approve a waiting deployment (gh 2.63+ only — use GitHub UI or API for older versions)
 gh run review <RUN_ID> --approve
 
 # Cancel a running workflow
