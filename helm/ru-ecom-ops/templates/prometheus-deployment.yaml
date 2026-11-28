@@ -161,7 +161,7 @@ rules:
 - apiGroups: [""]
   resources:
   - nodes
-  - nodes/proxy
+  - nodes/metrics
   - services
   - endpoints
   - pods
@@ -171,7 +171,7 @@ rules:
   resources:
   - ingresses
   verbs: ["get", "list", "watch"]
-- nonResourceURLs: ["/metrics"]
+- nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
   verbs: ["get"]
 
 ---
