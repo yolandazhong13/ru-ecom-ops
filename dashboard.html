@@ -215,6 +215,77 @@
             align-items: center;
             margin-top: 15px;
         }
+
+        .composite-health-container {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .composite-score {
+            font-size: 72px;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .composite-score.healthy { color: #00d966; }
+        .composite-score.warning { color: #ffaa00; }
+        .composite-score.critical { color: #ff4444; }
+
+        .dimension-tiles {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .dimension-tile {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .dimension-score {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #00d4ff;
+        }
+
+        .dimension-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .dimension-weight {
+            font-size: 10px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .cascading-failure {
+            background: rgba(255, 68, 68, 0.1);
+            border-left: 4px solid #ff4444;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #ff8888;
+        }
+
+        .trend-chart-container {
+            position: relative;
+            height: 350px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -227,6 +298,38 @@
                 <button class="refresh-btn" onclick="location.reload()">↻ Refresh</button>
             </div>
         </header>
+
+        <!-- Composite Health Status -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-title">🎯 Composite Health Score</div>
+            <div class="composite-health-container">
+                <div>
+                    <div class="composite-score healthy" id="composite-score">-</div>
+                    <div style="color: #888; font-size: 13px; margin-bottom: 15px;">Overall Platform Health</div>
+                    <div id="composite-status" style="display: inline-block;">
+                        <span class="status-badge badge-healthy">🟢 LOADING</span>
+                    </div>
+                    <div id="cascading-failures-container" style="margin-top: 10px;"></div>
+                </div>
+                <div class="dimension-tiles">
+                    <div class="dimension-tile">
+                        <div class="dimension-label">Execution</div>
+                        <div class="dimension-score" id="health-score">-</div>
+                        <div class="dimension-weight">40% weight</div>
+                    </div>
+                    <div class="dimension-tile">
+                        <div class="dimension-label">API Health</div>
+                        <div class="dimension-score" id="api-score">-</div>
+                        <div class="dimension-weight">35% weight</div>
+                    </div>
+                    <div class="dimension-tile">
+                        <div class="dimension-label">Data Quality</div>
+                        <div class="dimension-score" id="quality-score">-</div>
+                        <div class="dimension-weight">25% weight</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- KPI Cards -->
         <div class="grid">
@@ -274,9 +377,9 @@
         <!-- Charts Row -->
         <div class="chart-grid">
             <div class="card">
-                <div class="card-title">📈 Execution Success Rate (24h)</div>
-                <div class="chart-container">
-                    <canvas id="success-chart"></canvas>
+                <div class="card-title">📈 Composite Health Trend (24h)</div>
+                <div class="trend-chart-container">
+                    <canvas id="trend-chart"></canvas>
                 </div>
             </div>
 
@@ -392,6 +495,9 @@
     </div>
 
     <script>
+        // Global state for charts
+        let trendChartInstance = null;
+
         // Update timestamps
         function updateTimestamps() {
             const now = new Date();
@@ -402,51 +508,242 @@
             document.getElementById('footer-time').textContent = timeStr;
         }
 
-        // Initialize charts
-        function initCharts() {
-            // Success Rate Chart
-            const successCtx = document.getElementById('success-chart').getContext('2d');
-            new Chart(successCtx, {
-                type: 'line',
-                data: {
-                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
-                    datasets: [{
-                        label: 'Success Rate (%)',
-                        data: [100, 99.8, 100, 100, 100, 100],
-                        borderColor: '#00d966',
-                        backgroundColor: 'rgba(0, 217, 102, 0.1)',
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#00d966',
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: '#ccc' }
-                        }
+        // Get status class and icon for a score
+        function getStatusClassForScore(score) {
+            if (score >= 90) return { class: 'healthy', icon: '🟢', text: 'HEALTHY' };
+            if (score >= 70) return { class: 'warning', icon: '🟠', text: 'DEGRADED' };
+            return { class: 'critical', icon: '🔴', text: 'UNHEALTHY' };
+        }
+
+        // Fetch composite health data from backend
+        async function fetchCompositeHealth() {
+            try {
+                const response = await fetch('http://127.0.0.1:8766/health');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Update composite score
+                const compositeScore = Math.round(data.composite_score || 0);
+                const scoreElement = document.getElementById('composite-score');
+                const statusElement = document.getElementById('composite-status');
+
+                // Get status for color coding
+                const status = getStatusClassForScore(compositeScore);
+
+                // Update score display
+                scoreElement.textContent = compositeScore;
+                scoreElement.className = `composite-score ${status.class}`;
+
+                // Update status badge
+                statusElement.innerHTML = `<span class="status-badge badge-${status.class}">${status.icon} ${status.text}</span>`;
+
+                // Update dimension scores
+                const dimensions = data.dimension_scores || {};
+                document.getElementById('health-score').textContent = Math.round(dimensions.health || 0);
+                document.getElementById('api-score').textContent = Math.round(dimensions.api || 0);
+                document.getElementById('quality-score').textContent = Math.round(dimensions.quality || 0);
+
+                // Display cascading failures if any
+                const cascadingContainer = document.getElementById('cascading-failures-container');
+                cascadingContainer.innerHTML = '';
+
+                if (data.cascading_failures && data.cascading_failures.length > 0) {
+                    data.cascading_failures.forEach(failure => {
+                        const failureDiv = document.createElement('div');
+                        failureDiv.className = 'cascading-failure';
+                        failureDiv.innerHTML = `<strong>⚡ ${failure.component}:</strong> ${failure.reason}`;
+                        cascadingContainer.appendChild(failureDiv);
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error fetching composite health:', error);
+            }
+        }
+
+        // Fetch trend data and update chart
+        async function fetchTrends() {
+            try {
+                const response = await fetch('http://127.0.0.1:8766/trends');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const trendPoints = data.trend_points || [];
+
+                if (trendPoints.length === 0) {
+                    console.warn('No trend data available');
+                    return;
+                }
+
+                // Prepare chart data
+                const labels = trendPoints.map(point => {
+                    const time = new Date(point.timestamp);
+                    return time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                });
+
+                const compositeScores = trendPoints.map(point => point.all_scores.composite_score || 0);
+
+                // Extract predictions if available
+                const predictions = trendPoints.map(point => point.predictions || {});
+                const predictedScores1h = predictions.map(p => p.predicted_1h);
+                const predictedScores4h = predictions.map(p => p.predicted_4h);
+
+                // Create or update trend chart
+                const trendCtx = document.getElementById('trend-chart');
+                if (!trendCtx) {
+                    console.error('trend-chart canvas not found');
+                    return;
+                }
+
+                const ctx = trendCtx.getContext('2d');
+
+                // Destroy existing chart if it exists
+                if (trendChartInstance) {
+                    trendChartInstance.destroy();
+                }
+
+                trendChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Composite Health Score',
+                                data: compositeScores,
+                                borderColor: '#00d966',
+                                backgroundColor: 'rgba(0, 217, 102, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#00d966',
+                                borderWidth: 2,
+                            },
+                            {
+                                label: 'Predicted (1h ahead)',
+                                data: predictedScores1h,
+                                borderColor: '#ffaa00',
+                                backgroundColor: 'transparent',
+                                borderDash: [5, 5],
+                                tension: 0.4,
+                                fill: false,
+                                pointRadius: 2,
+                                pointBackgroundColor: '#ffaa00',
+                                borderWidth: 1,
+                            },
+                            {
+                                label: 'Predicted (4h ahead)',
+                                data: predictedScores4h,
+                                borderColor: '#ff4444',
+                                backgroundColor: 'transparent',
+                                borderDash: [10, 5],
+                                tension: 0.4,
+                                fill: false,
+                                pointRadius: 2,
+                                pointBackgroundColor: '#ff4444',
+                                borderWidth: 1,
+                            }
+                        ]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: { color: '#888' },
-                            grid: { color: '#333' }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: { color: '#ccc' },
+                                position: 'top'
+                            }
                         },
-                        x: {
-                            ticks: { color: '#888' },
-                            grid: { color: '#333' }
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: { color: '#888' },
+                                grid: { color: '#333' }
+                            },
+                            x: {
+                                ticks: { color: '#888' },
+                                grid: { color: '#333' }
+                            }
                         }
                     }
-                }
-            });
+                });
 
-            // Latency Chart
-            const latencyCtx = document.getElementById('latency-chart').getContext('2d');
-            new Chart(latencyCtx, {
+            } catch (error) {
+                console.error('Error fetching trends:', error);
+            }
+        }
+
+        // Fetch and display alerts
+        async function fetchAlerts() {
+            try {
+                const response = await fetch('http://127.0.0.1:8766/alerts');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const alerts = data.alerts || [];
+
+                // Find or create alerts container
+                let alertsContainer = document.getElementById('alerts-container');
+                if (!alertsContainer) {
+                    console.warn('alerts-container not found');
+                    return;
+                }
+
+                alertsContainer.innerHTML = '';
+
+                // Display alerts with severity-based coloring
+                alerts.forEach(alert => {
+                    const alertClass = alert.severity === 'CRITICAL' ? 'alert-critical' :
+                                      alert.severity === 'WARNING' ? 'alert-warning' : 'alert-info';
+
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = `alert-item ${alertClass}`;
+
+                    const icon = alert.severity === 'CRITICAL' ? '🚨' :
+                               alert.severity === 'WARNING' ? '⚠️' : 'ℹ️';
+
+                    alertDiv.innerHTML = `
+                        <div class="alert-title">${icon} ${alert.title}</div>
+                        <div class="alert-description">${alert.description}</div>
+                        <div style="font-size: 11px; color: #888; margin-top: 6px;">
+                            ${new Date(alert.timestamp).toLocaleString()}
+                        </div>
+                    `;
+
+                    alertsContainer.appendChild(alertDiv);
+                });
+
+                // Update alert count
+                document.getElementById('alert-count').textContent = alerts.length;
+
+                // Count by severity
+                const criticalCount = alerts.filter(a => a.severity === 'CRITICAL').length;
+                const warningCount = alerts.filter(a => a.severity === 'WARNING').length;
+                document.getElementById('critical-count').textContent = criticalCount;
+                document.getElementById('warning-count').textContent = warningCount;
+
+            } catch (error) {
+                console.error('Error fetching alerts:', error);
+            }
+        }
+
+        // Initialize latency chart (placeholder for existing latency data)
+        function initCharts() {
+            const latencyCtx = document.getElementById('latency-chart');
+            if (!latencyCtx) {
+                console.warn('latency-chart canvas not found');
+                return;
+            }
+
+            const ctx = latencyCtx.getContext('2d');
+            new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['/v1/prices', '/v1/attributes', '/v1/import', '/v1/orders'],
@@ -763,11 +1060,25 @@
         loadHandlers();
         fetchHealthStatus();
 
+        // Fetch new composite health data, trends, and alerts
+        fetchCompositeHealth();
+        fetchTrends();
+        fetchAlerts();
+
         // Update timestamps every second
         setInterval(updateTimestamps, 1000);
 
         // Auto-refresh health status every 8 seconds
         setInterval(fetchHealthStatus, 8000);
+
+        // Poll composite health every 5 seconds
+        setInterval(fetchCompositeHealth, 5000);
+
+        // Poll trends every 30 seconds
+        setInterval(fetchTrends, 30000);
+
+        // Poll alerts every 5 seconds
+        setInterval(fetchAlerts, 5000);
     </script>
 </body>
 </html>

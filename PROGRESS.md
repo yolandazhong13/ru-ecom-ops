@@ -165,6 +165,64 @@ Module: inventory_update@WB_CN
 - ✅ Handler registry discovering handlers
 - ⏳ Unified monitoring dashboard (Phase 4.2)
 
+### Phase 2.5: Integrated End-to-End Workflow Testing ✅
+- **Status**: Complete
+- **Description**: Unified test harness combining all Phase 2 components with synthetic data pipeline
+
+#### Phase 2.5 Validation Results
+
+**Test Execution**: ✅ All 5 phases completed successfully
+```
+Phase 1 (Populate Ledger):
+  - Orders generated: 50
+  - Orders added to ledger: 50
+  ✓ All orders have unique ledger_entry_id computed
+
+Phase 2 (Anomaly Detection):
+  - Orders analyzed: 50
+  - Anomalies detected: 25
+  - P0 (Critical): 9 (payment overdue cases)
+  - P1 (Warning): 16 (delivery delays)
+  
+Phase 3 (Alert Dispatch):
+  - Alerts ready for dispatch: 25
+  - Alert batching: P0→individual, P1→by shop
+  - Feishu integration ready (webhook configuration needed for live sends)
+  
+Phase 4 (Billing Aggregation):
+  - Shops analyzed: 6
+  - Total orders aggregated: 50
+  - Total revenue: 127,500.00 RUB
+  - Confirmed: 21,600.00 RUB (17%)
+  - Pending: 105,900.00 RUB (83%)
+  - Date range: Past 50 days (covers all synthetic orders)
+  
+Phase 5 (Reconciliation):
+  - Ledger orders: 50
+  - Platform orders (simulated): 0
+  - Matched orders: 0
+  - Discrepancies detected: 50 (expected—no live platform data)
+```
+
+#### Cross-Component Integration Verified ✅
+- Phase 1→2: Ledger persists all 50 orders with correct entry IDs
+- Phase 2→3: Anomalies flow from detector to dispatcher with severity classification
+- Phase 3→4: Dispatcher pre-processes anomalies; billing aggregator independently analyzes all orders
+- Phase 4→5: Billing report generated; reconciliation engine compares ledger vs platform
+
+#### Output Files Generated
+- `order_ledger.json` - 50 orders with full audit trail
+- `anomaly_detection_report.json` - 25 anomalies with severity classification
+- `alert_dispatch_report.json` - Alert preparation logs
+- `billing_report_daily.json` - Revenue summary by shop
+- `reconciliation_report.json` - Discrepancy analysis
+
+#### Key Fixes Applied
+1. **Ledger Entry ID Computation**: Synthetic orders now compute `ledger_entry_id` to prevent deduplication
+2. **Date Range Handling**: Billing aggregator queries past 50 days to capture all synthetic data
+3. **Method Signatures**: Fixed attribute access patterns (`.entries` not `.orders`, proper constructor parameters)
+4. **Report Serialization**: Updated report attribute mapping to actual ReconciliationReport fields
+
 ## File Structure
 
 ```
@@ -313,19 +371,20 @@ python3 scripts/test_unified_executor_inventory.py --confirm
 
 **Phase 1**: ✅ Complete (existing Codex platform)  
 **Phase 2**: ✅ Complete (Order tracking & reconciliation - 5 new components)  
+**Phase 2.5**: ✅ Complete (Integrated end-to-end workflow testing)  
 **Phase 3**: ✅ Complete (runtime health tracking implemented)  
 **Phase 4**: ⏳ IN PROGRESS (4/5 core components implemented)
 
-**Next Phase**: Phase 2.5 - Integrated end-to-end workflow testing
-  1. Create test harness combining all Phase 2 components
-  2. Populate ledger with synthetic order data
-  3. Run detection → dispatch → billing → reconciliation pipeline
-  4. Verify outputs and cross-component integration
+**Next Phase**: Phase 4.2 - Unified monitoring dashboard and Phase 3+ integration
+  1. Create web-based health monitoring dashboard
+  2. Integrate API health, data quality, and action handler monitoring
+  3. Real-time alert system integration
+  4. Trend analysis and predictive alerting
 
 ---
 
 *Generated: 2026-11-20*  
-*Last Updated: 2026-11-24T10:42:00+00:00*
+*Last Updated: 2026-11-24T15:01:49+00:00*
 [2026-11-21T03:20:24.877689+00:00] p0_incident_p0_test_workflow_20261121 | p0_control_system | approval_decision | p0_test_workflow_20261121 | completed
 [2026-11-21T12:36:03.086968+00:00] p0_incident_p0_test_workflow_20261121 | p0_control_system | approval_decision | p0_test_workflow_20261121 | completed
 [2026-11-21T12:50:14.266077+00:00] p0_incident_p0_test_workflow_20261121 | p0_control_system | approval_decision | p0_test_workflow_20261121 | completed

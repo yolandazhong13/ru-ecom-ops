@@ -1,13 +1,149 @@
 {
-  "timestamp": "2026-11-24T02:57:28.234676+00:00",
+  "timestamp": "2026-11-24T15:01:49.840641+00:00",
   "period": "daily",
-  "period_start": "2026-11-24T00:00:00+00:00",
-  "period_end": "2026-11-24T23:59:59+00:00",
-  "total_orders": 0,
-  "total_amount": 0.0,
-  "shop_stats": [],
-  "platform_stats": {},
-  "confirmed_total": 0.0,
-  "pending_total": 0.0,
+  "period_start": "2026-10-05T15:01:49.840637+00:00",
+  "period_end": "2026-11-24T15:01:49.840637+00:00",
+  "total_orders": 50,
+  "total_amount": 127500.0,
+  "shop_stats": [
+    {
+      "shop_id": "shop_001",
+      "platform": "WB_CN",
+      "period_start": "2026-10-05T15:01:49.840637+00:00",
+      "period_end": "2026-11-24T15:01:49.840637+00:00",
+      "total_orders": 9,
+      "confirmed_orders": 0,
+      "pending_orders": 9,
+      "cancelled_orders": 0,
+      "total_amount": 22500.0,
+      "confirmed_amount": 0.0,
+      "pending_amount": 22500.0,
+      "cancelled_amount": 0.0,
+      "currency": "RUB",
+      "state_breakdown": {
+        "pending_payment": 9
+      },
+      "payment_confirmed_count": 0,
+      "payment_pending_count": 9
+    },
+    {
+      "shop_id": "shop_002",
+      "platform": "Ozon",
+      "period_start": "2026-10-05T15:01:49.840637+00:00",
+      "period_end": "2026-11-24T15:01:49.840637+00:00",
+      "total_orders": 9,
+      "confirmed_orders": 0,
+      "pending_orders": 9,
+      "cancelled_orders": 0,
+      "total_amount": 23400.0,
+      "confirmed_amount": 0.0,
+      "pending_amount": 23400.0,
+      "cancelled_amount": 0.0,
+      "currency": "RUB",
+      "state_breakdown": {
+        "paid": 9
+      },
+      "payment_confirmed_count": 9,
+      "payment_pending_count": 0
+    },
+    {
+      "shop_id": "shop_003",
+      "platform": "WB_CN",
+      "period_start": "2026-10-05T15:01:49.840637+00:00",
+      "period_end": "2026-11-24T15:01:49.840637+00:00",
+      "total_orders": 8,
+      "confirmed_orders": 0,
+      "pending_orders": 8,
+      "cancelled_orders": 0,
+      "total_amount": 19200.0,
+      "confirmed_amount": 0.0,
+      "pending_amount": 19200.0,
+      "cancelled_amount": 0.0,
+      "currency": "RUB",
+      "state_breakdown": {
+        "shipped": 8
+      },
+      "payment_confirmed_count": 8,
+      "payment_pending_count": 0
+    },
+    {
+      "shop_id": "shop_001",
+      "platform": "Ozon",
+      "period_start": "2026-10-05T15:01:49.840637+00:00",
+      "period_end": "2026-11-24T15:01:49.840637+00:00",
+      "total_orders": 8,
+      "confirmed_orders": 0,
+      "pending_orders": 8,
+      "cancelled_orders": 0,
+      "total_amount": 20000.0,
+      "confirmed_amount": 0.0,
+      "pending_amount": 20000.0,
+      "cancelled_amount": 0.0,
+      "currency": "RUB",
+      "state_breakdown": {
+        "in_transit": 8
+      },
+      "payment_confirmed_count": 8,
+      "payment_pending_count": 0
+    },
+    {
+      "shop_id": "shop_002",
+      "platform": "WB_CN",
+      "period_start": "2026-10-05T15:01:49.840637+00:00",
+      "period_end": "2026-11-24T15:01:49.840637+00:00",
+      "total_orders": 8,
+      "confirmed_orders": 0,
+      "pending_orders": 8,
+      "cancelled_orders": 0,
+      "total_amount": 20800.0,
+      "confirmed_amount": 0.0,
+      "pending_amount": 20800.0,
+      "cancelled_amount": 0.0,
+      "currency": "RUB",
+      "state_breakdown": {
+        "delivered": 8
+      },
+      "payment_confirmed_count": 8,
+      "payment_pending_count": 0
+    },
+    {
+      "shop_id": "shop_003",
+      "platform": "Ozon",
+      "period_start": "2026-10-05T15:01:49.840637+00:00",
+      "period_end": "2026-11-24T15:01:49.840637+00:00",
+      "total_orders": 8,
+      "confirmed_orders": 8,
+      "pending_orders": 0,
+      "cancelled_orders": 0,
+      "total_amount": 21600.0,
+      "confirmed_amount": 21600.0,
+      "pending_amount": 0.0,
+      "cancelled_amount": 0.0,
+      "currency": "RUB",
+      "state_breakdown": {
+        "confirmed": 8
+      },
+      "payment_confirmed_count": 8,
+      "payment_pending_count": 0
+    }
+  ],
+  "platform_stats": {
+    "WB_CN": {
+      "total_orders": 25,
+      "total_amount": 62500.0,
+      "confirmed_amount": 0.0,
+      "pending_amount": 0.0,
+      "cancelled_amount": 0.0
+    },
+    "Ozon": {
+      "total_orders": 25,
+      "total_amount": 65000.0,
+      "confirmed_amount": 0.0,
+      "pending_amount": 0.0,
+      "cancelled_amount": 0.0
+    }
+  },
+  "confirmed_total": 21600.0,
+  "pending_total": 105900.0,
   "cancelled_total": 0.0
 }

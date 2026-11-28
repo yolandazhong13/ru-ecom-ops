@@ -1,0 +1,143 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-11-25T01:52:39.203893+00:00",
+  "latest_report": {
+    "timestamp": "2026-11-25T01:52:39.203888+00:00",
+    "composite_health": {
+      "timestamp": "2026-11-25T01:52:39.203688+00:00",
+      "health_dimension": {
+        "dimension": "health",
+        "score": 100.0,
+        "metric_count": 8,
+        "healthy_count": 8,
+        "weight": 0.4
+      },
+      "api_dimension": {
+        "dimension": "api",
+        "score": 100.0,
+        "metric_count": 12,
+        "healthy_count": 12,
+        "weight": 0.35
+      },
+      "quality_dimension": {
+        "dimension": "quality",
+        "score": 50.0,
+        "metric_count": 0,
+        "healthy_count": 0,
+        "weight": 0.25
+      },
+      "composite_score": 87.5,
+      "status": "degraded",
+      "sla_compliance": {
+        "health_success_rate": true,
+        "health_error_rate": true,
+        "api_availability": true,
+        "quality_pass_rate": false,
+        "composite_score": false
+      },
+      "module_breakdown": {
+        "inventory_update@WB_CN": {
+          "health_status": "healthy",
+          "success_rate": 100.0,
+          "total_executions": 1,
+          "last_execution": "2026-11-20T06:34:36.459251+00:00"
+        },
+        "listing_update@Ozon RU": {
+          "health_status": "healthy",
+          "success_rate": 100.0,
+          "total_executions": 1,
+          "last_execution": "2026-11-20T07:01:01.903075+00:00"
+        },
+        "pricing_update@WB_CN": {
+          "health_status": "healthy",
+          "success_rate": 100.0,
+          "total_executions": 1,
+          "last_execution": "2026-11-20T07:14:52.091196+00:00"
+        },
+        "purchase_order@WB_CN": {
+          "health_status": "healthy",
+          "success_rate": 100.0,
+          "total_executions": 1,
+          "last_execution": "2026-11-20T07:14:52.149592+00:00"
+        },
+        "competitor_price_tracking@WB_CN": {
+          "health_status": "healthy",
+          "success_rate": 100.0,
+          "total_executions": 1,
+          "last_execution": "2026-11-20T07:32:53.689609+00:00"
+        },
+        "demand_forecast@WB_CN": {
+          "health_status": "healthy",
+          "success_rate": 100.0,
+          "total_executions": 1,
+          "last_execution": "2026-11-20T07:32:53.746116+00:00"
+        },
+        "inventory_rebalance@WB_CN": {
+          "health_status": "healthy",
+          "success_rate": 100.0,
+          "total_executions": 1,
+          "last_execution": "2026-11-20T07:32:53.801507+00:00"
+        },
+        "policy_change_monitor@WB_CN": {
+          "health_status": "healthy",
+          "success_rate": 100.0,
+          "total_executions": 1,
+          "last_execution": "2026-11-20T07:32:53.853710+00:00"
+        }
+      },
+      "platform_breakdown": {
+        "WB_CN": {
+          "modules": [
+            "inventory_update@WB_CN",
+            "pricing_update@WB_CN",
+            "purchase_order@WB_CN",
+            "competitor_price_tracking@WB_CN",
+            "demand_forecast@WB_CN",
+            "inventory_rebalance@WB_CN",
+            "policy_change_monitor@WB_CN"
+          ],
+          "api_endpoints": [
+            "POST:/v1/product/prices@WB_CN",
+            "POST:/v1/purchase-orders@WB_CN",
+            "GET:/v1/competitor/prices@WB_CN",
+            "POST:/v1/analytics/forecast@WB_CN",
+            "POST:/v1/inventory/rebalance@WB_CN",
+            "GET:/v1/platform/policies@WB_CN",
+            "POST:/v1/campaigns/optimize@WB_CN",
+            "POST:/v1/promotions/calendar@WB_CN",
+            "POST:/v1/customers/segment@WB_CN",
+            "POST:/v1/returns/process@WB_CN"
+          ],
+          "status": "unknown"
+        },
+        "Ozon RU": {
+          "modules": [
+            "listing_update@Ozon RU"
+          ],
+          "api_endpoints": [
+            "POST:/v1/product/attributes/update@Ozon RU",
+            "POST:/v1/product/import/prices@Ozon RU"
+          ],
+          "status": "unknown"
+        }
+      }
+    },
+    "cascading_failures": [],
+    "trending_degradation": false,
+    "predicted_unhealthy_in_1h": false,
+    "predicted_unhealthy_in_4h": false,
+    "alerts_count": 0
+  },
+  "trends_history": [
+    {
+      "timestamp": "2026-11-25T01:52:39.203888+00:00",
+      "composite_score": 87.5,
+      "health_score": 100.0,
+      "api_score": 100.0,
+      "quality_score": 50.0,
+      "status": "degraded",
+      "cascading_failures_count": 0
+    }
+  ],
+  "cascading_failures_24h": []
+}

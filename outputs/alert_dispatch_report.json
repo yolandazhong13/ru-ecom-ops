@@ -1,8 +1,108 @@
 {
-  "timestamp": "2026-11-24T02:57:28.234593+00:00",
-  "total_anomalies_processed": 0,
+  "timestamp": "2026-11-24T15:01:49.840336+00:00",
+  "total_anomalies_processed": 25,
   "alerts_dispatched": 0,
-  "alerts_failed": 0,
+  "alerts_failed": 2,
   "alerts_skipped": 0,
-  "dispatch_logs": []
+  "dispatch_logs": [
+    {
+      "timestamp": "2026-11-24T15:01:49.840441+00:00",
+      "alert_type": "critical",
+      "severity": "p0_immediate",
+      "recipient_count": 1,
+      "anomalies_included": 1,
+      "success": false,
+      "error_message": null
+    },
+    {
+      "timestamp": "2026-11-24T15:01:49.840452+00:00",
+      "alert_type": "critical",
+      "severity": "p0_immediate",
+      "recipient_count": 1,
+      "anomalies_included": 1,
+      "success": false,
+      "error_message": null
+    },
+    {
+      "timestamp": "2026-11-24T15:01:49.840460+00:00",
+      "alert_type": "critical",
+      "severity": "p0_immediate",
+      "recipient_count": 1,
+      "anomalies_included": 1,
+      "success": false,
+      "error_message": null
+    },
+    {
+      "timestamp": "2026-11-24T15:01:49.840466+00:00",
+      "alert_type": "critical",
+      "severity": "p0_immediate",
+      "recipient_count": 1,
+      "anomalies_included": 1,
+      "success": false,
+      "error_message": null
+    },
+    {
+      "timestamp": "2026-11-24T15:01:49.840472+00:00",
+      "alert_type": "critical",
+      "severity": "p0_immediate",
+      "recipient_count": 1,
+      "anomalies_included": 1,
+      "success": false,
+      "error_message": null
+    },
+    {
+      "timestamp": "2026-11-24T15:01:49.840478+00:00",
+      "alert_type": "critical",
+      "severity": "p0_immediate",
+      "recipient_count": 1,
+      "anomalies_included": 1,
+      "success": false,
+      "error_message": null
+    },
+    {
+      "timestamp": "2026-11-24T15:01:49.840483+00:00",
+      "alert_type": "critical",
+      "severity": "p0_immediate",
+      "recipient_count": 1,
+      "anomalies_included": 1,
+      "success": false,
+      "error_message": null
+    },
+    {
+      "timestamp": "2026-11-24T15:01:49.840489+00:00",
+      "alert_type": "critical",
+      "severity": "p0_immediate",
+      "recipient_count": 1,
+      "anomalies_included": 1,
+      "success": false,
+      "error_message": null
+    },
+    {
+      "timestamp": "2026-11-24T15:01:49.840494+00:00",
+      "alert_type": "critical",
+      "severity": "p0_immediate",
+      "recipient_count": 1,
+      "anomalies_included": 1,
+      "success": false,
+      "error_message": null
+    },
+    {
+      "timestamp": "2026-11-24T15:01:49.840506+00:00",
+      "alert_type": "warning",
+      "severity": "p1_hourly",
+      "recipient_count": 1,
+      "anomalies_included": 9,
+      "success": false,
+      "error_message": null
+    },
+    {
+      "timestamp": "2026-11-24T15:01:49.840513+00:00",
+      "alert_type": "warning",
+      "severity": "p1_hourly",
+      "recipient_count": 1,
+      "anomalies_included": 7,
+      "success": false,
+      "error_message": null
+    }
+  ]
 }

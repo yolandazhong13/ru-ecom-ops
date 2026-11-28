@@ -1,18 +1,494 @@
 {
-  "timestamp": "2026-11-24T02:57:28.234400+00:00",
-  "total_orders_analyzed": 2,
-  "orders_with_anomalies": 0,
-  "total_anomalies_detected": 0,
+  "timestamp": "2026-11-24T15:01:49.839557+00:00",
+  "total_orders_analyzed": 50,
+  "orders_with_anomalies": 25,
+  "total_anomalies_detected": 25,
   "severity_breakdown": {
-    "p0_immediate": 0,
-    "p1_hourly": 0,
+    "p0_immediate": 9,
+    "p1_hourly": 16,
     "p2_daily": 0
   },
   "category_breakdown": {
-    "timing_anomalies": 0,
+    "timing_anomalies": 25,
     "state_transition_anomalies": 0,
     "data_quality_anomalies": 0,
     "reconciliation_anomalies": 0
   },
-  "anomalies": []
+  "anomalies": [
+    {
+      "ledger_entry_id": "7d86c7e0fd4746e3",
+      "order_id": "wb_cn_order_000000",
+      "platform": "WB_CN",
+      "shop_id": "shop_001",
+      "anomaly_type": "payment_overdue",
+      "category": "timing",
+      "severity": "p0_immediate",
+      "description": "Payment pending for 12.0 hours",
+      "detected_at": "2026-11-24T15:01:49.839568+00:00",
+      "order_date": "2026-11-24T03:01:49.837936+00:00",
+      "current_state": "pending_payment",
+      "metadata": {
+        "platform_state": "awaiting_payment",
+        "total_amount": 100.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "53973c1d0268974a",
+      "order_id": "wb_cn_order_000006",
+      "platform": "WB_CN",
+      "shop_id": "shop_001",
+      "anomaly_type": "payment_overdue",
+      "category": "timing",
+      "severity": "p0_immediate",
+      "description": "Payment pending for 156.0 hours",
+      "detected_at": "2026-11-24T15:01:49.839588+00:00",
+      "order_date": "2026-11-18T03:01:49.837936+00:00",
+      "current_state": "pending_payment",
+      "metadata": {
+        "platform_state": "awaiting_payment",
+        "total_amount": 700.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "e492c384f8c96c2f",
+      "order_id": "wb_cn_order_000012",
+      "platform": "WB_CN",
+      "shop_id": "shop_001",
+      "anomaly_type": "payment_overdue",
+      "category": "timing",
+      "severity": "p0_immediate",
+      "description": "Payment pending for 300.0 hours",
+      "detected_at": "2026-11-24T15:01:49.839601+00:00",
+      "order_date": "2026-11-12T03:01:49.837936+00:00",
+      "current_state": "pending_payment",
+      "metadata": {
+        "platform_state": "awaiting_payment",
+        "total_amount": 1300.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "cf8626921a57892d",
+      "order_id": "wb_cn_order_000018",
+      "platform": "WB_CN",
+      "shop_id": "shop_001",
+      "anomaly_type": "payment_overdue",
+      "category": "timing",
+      "severity": "p0_immediate",
+      "description": "Payment pending for 444.0 hours",
+      "detected_at": "2026-11-24T15:01:49.839611+00:00",
+      "order_date": "2026-11-06T03:01:49.837936+00:00",
+      "current_state": "pending_payment",
+      "metadata": {
+        "platform_state": "awaiting_payment",
+        "total_amount": 1900.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "bb4fc99a5bffe7cf",
+      "order_id": "wb_cn_order_000024",
+      "platform": "WB_CN",
+      "shop_id": "shop_001",
+      "anomaly_type": "payment_overdue",
+      "category": "timing",
+      "severity": "p0_immediate",
+      "description": "Payment pending for 588.0 hours",
+      "detected_at": "2026-11-24T15:01:49.839621+00:00",
+      "order_date": "2026-10-31T03:01:49.837936+00:00",
+      "current_state": "pending_payment",
+      "metadata": {
+        "platform_state": "awaiting_payment",
+        "total_amount": 2500.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "702661edf096319c",
+      "order_id": "wb_cn_order_000030",
+      "platform": "WB_CN",
+      "shop_id": "shop_001",
+      "anomaly_type": "payment_overdue",
+      "category": "timing",
+      "severity": "p0_immediate",
+      "description": "Payment pending for 732.0 hours",
+      "detected_at": "2026-11-24T15:01:49.839630+00:00",
+      "order_date": "2026-10-25T03:01:49.837936+00:00",
+      "current_state": "pending_payment",
+      "metadata": {
+        "platform_state": "awaiting_payment",
+        "total_amount": 3100.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "d8eae60ac24bdefd",
+      "order_id": "wb_cn_order_000036",
+      "platform": "WB_CN",
+      "shop_id": "shop_001",
+      "anomaly_type": "payment_overdue",
+      "category": "timing",
+      "severity": "p0_immediate",
+      "description": "Payment pending for 876.0 hours",
+      "detected_at": "2026-11-24T15:01:49.839638+00:00",
+      "order_date": "2026-10-19T03:01:49.837936+00:00",
+      "current_state": "pending_payment",
+      "metadata": {
+        "platform_state": "awaiting_payment",
+        "total_amount": 3700.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "2542368fa7ffb16c",
+      "order_id": "wb_cn_order_000042",
+      "platform": "WB_CN",
+      "shop_id": "shop_001",
+      "anomaly_type": "payment_overdue",
+      "category": "timing",
+      "severity": "p0_immediate",
+      "description": "Payment pending for 1020.0 hours",
+      "detected_at": "2026-11-24T15:01:49.839647+00:00",
+      "order_date": "2026-10-13T03:01:49.837936+00:00",
+      "current_state": "pending_payment",
+      "metadata": {
+        "platform_state": "awaiting_payment",
+        "total_amount": 4300.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "be81148c668a7580",
+      "order_id": "wb_cn_order_000048",
+      "platform": "WB_CN",
+      "shop_id": "shop_001",
+      "anomaly_type": "payment_overdue",
+      "category": "timing",
+      "severity": "p0_immediate",
+      "description": "Payment pending for 1164.0 hours",
+      "detected_at": "2026-11-24T15:01:49.839662+00:00",
+      "order_date": "2026-10-07T03:01:49.837936+00:00",
+      "current_state": "pending_payment",
+      "metadata": {
+        "platform_state": "awaiting_payment",
+        "total_amount": 4900.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "0521c49330076a46",
+      "order_id": "ozon_order_000001",
+      "platform": "Ozon",
+      "shop_id": "shop_002",
+      "anomaly_type": "shipment_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order paid but not shipped for 1.5 days",
+      "detected_at": "2026-11-24T15:01:49.839577+00:00",
+      "order_date": "2026-11-23T03:01:49.837936+00:00",
+      "current_state": "paid",
+      "metadata": {
+        "platform_state": "confirmed",
+        "total_amount": 200.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "da014e448ac74728",
+      "order_id": "ozon_order_000007",
+      "platform": "Ozon",
+      "shop_id": "shop_002",
+      "anomaly_type": "shipment_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order paid but not shipped for 7.5 days",
+      "detected_at": "2026-11-24T15:01:49.839592+00:00",
+      "order_date": "2026-11-17T03:01:49.837936+00:00",
+      "current_state": "paid",
+      "metadata": {
+        "platform_state": "confirmed",
+        "total_amount": 800.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "5560b68157d7e382",
+      "order_id": "ozon_order_000009",
+      "platform": "Ozon",
+      "shop_id": "shop_001",
+      "anomaly_type": "delivery_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order in transit for 1.4 days",
+      "detected_at": "2026-11-24T15:01:49.839596+00:00",
+      "order_date": "2026-11-15T03:01:49.837936+00:00",
+      "current_state": "in_transit",
+      "metadata": {
+        "platform_state": "in_transit",
+        "total_amount": 1000.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "82ab42c0e6c198b3",
+      "order_id": "ozon_order_000013",
+      "platform": "Ozon",
+      "shop_id": "shop_002",
+      "anomaly_type": "shipment_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order paid but not shipped for 13.5 days",
+      "detected_at": "2026-11-24T15:01:49.839604+00:00",
+      "order_date": "2026-11-11T03:01:49.837936+00:00",
+      "current_state": "paid",
+      "metadata": {
+        "platform_state": "confirmed",
+        "total_amount": 1400.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "0795101bbc08ec5a",
+      "order_id": "ozon_order_000015",
+      "platform": "Ozon",
+      "shop_id": "shop_001",
+      "anomaly_type": "delivery_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order in transit for 2.2 days",
+      "detected_at": "2026-11-24T15:01:49.839607+00:00",
+      "order_date": "2026-11-09T03:01:49.837936+00:00",
+      "current_state": "in_transit",
+      "metadata": {
+        "platform_state": "in_transit",
+        "total_amount": 1600.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "5687260d1dd84a29",
+      "order_id": "ozon_order_000019",
+      "platform": "Ozon",
+      "shop_id": "shop_002",
+      "anomaly_type": "shipment_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order paid but not shipped for 19.5 days",
+      "detected_at": "2026-11-24T15:01:49.839614+00:00",
+      "order_date": "2026-11-05T03:01:49.837936+00:00",
+      "current_state": "paid",
+      "metadata": {
+        "platform_state": "confirmed",
+        "total_amount": 2000.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "a0cdf0ccff7f95fa",
+      "order_id": "ozon_order_000021",
+      "platform": "Ozon",
+      "shop_id": "shop_001",
+      "anomaly_type": "delivery_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order in transit for 3.1 days",
+      "detected_at": "2026-11-24T15:01:49.839617+00:00",
+      "order_date": "2026-11-03T03:01:49.837936+00:00",
+      "current_state": "in_transit",
+      "metadata": {
+        "platform_state": "in_transit",
+        "total_amount": 2200.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "439849428e9eb468",
+      "order_id": "ozon_order_000025",
+      "platform": "Ozon",
+      "shop_id": "shop_002",
+      "anomaly_type": "shipment_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order paid but not shipped for 25.5 days",
+      "detected_at": "2026-11-24T15:01:49.839623+00:00",
+      "order_date": "2026-10-30T03:01:49.837936+00:00",
+      "current_state": "paid",
+      "metadata": {
+        "platform_state": "confirmed",
+        "total_amount": 2600.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "89b7a690a990ed00",
+      "order_id": "ozon_order_000027",
+      "platform": "Ozon",
+      "shop_id": "shop_001",
+      "anomaly_type": "delivery_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order in transit for 3.9 days",
+      "detected_at": "2026-11-24T15:01:49.839626+00:00",
+      "order_date": "2026-10-28T03:01:49.837936+00:00",
+      "current_state": "in_transit",
+      "metadata": {
+        "platform_state": "in_transit",
+        "total_amount": 2800.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "c8aaf05e6bce0bd6",
+      "order_id": "ozon_order_000031",
+      "platform": "Ozon",
+      "shop_id": "shop_002",
+      "anomaly_type": "shipment_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order paid but not shipped for 31.5 days",
+      "detected_at": "2026-11-24T15:01:49.839632+00:00",
+      "order_date": "2026-10-24T03:01:49.837936+00:00",
+      "current_state": "paid",
+      "metadata": {
+        "platform_state": "confirmed",
+        "total_amount": 3200.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "b7991e8d56319388",
+      "order_id": "ozon_order_000033",
+      "platform": "Ozon",
+      "shop_id": "shop_001",
+      "anomaly_type": "delivery_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order in transit for 4.8 days",
+      "detected_at": "2026-11-24T15:01:49.839635+00:00",
+      "order_date": "2026-10-22T03:01:49.837936+00:00",
+      "current_state": "in_transit",
+      "metadata": {
+        "platform_state": "in_transit",
+        "total_amount": 3400.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "3f8f421e6c2165ba",
+      "order_id": "ozon_order_000037",
+      "platform": "Ozon",
+      "shop_id": "shop_002",
+      "anomaly_type": "shipment_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order paid but not shipped for 37.5 days",
+      "detected_at": "2026-11-24T15:01:49.839641+00:00",
+      "order_date": "2026-10-18T03:01:49.837936+00:00",
+      "current_state": "paid",
+      "metadata": {
+        "platform_state": "confirmed",
+        "total_amount": 3800.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "1fbabc6c6f882efb",
+      "order_id": "ozon_order_000039",
+      "platform": "Ozon",
+      "shop_id": "shop_001",
+      "anomaly_type": "delivery_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order in transit for 5.6 days",
+      "detected_at": "2026-11-24T15:01:49.839644+00:00",
+      "order_date": "2026-10-16T03:01:49.837936+00:00",
+      "current_state": "in_transit",
+      "metadata": {
+        "platform_state": "in_transit",
+        "total_amount": 4000.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "9b8d95b20a284225",
+      "order_id": "ozon_order_000043",
+      "platform": "Ozon",
+      "shop_id": "shop_002",
+      "anomaly_type": "shipment_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order paid but not shipped for 43.5 days",
+      "detected_at": "2026-11-24T15:01:49.839649+00:00",
+      "order_date": "2026-10-12T03:01:49.837936+00:00",
+      "current_state": "paid",
+      "metadata": {
+        "platform_state": "confirmed",
+        "total_amount": 4400.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "85ca38e0a62ed462",
+      "order_id": "ozon_order_000045",
+      "platform": "Ozon",
+      "shop_id": "shop_001",
+      "anomaly_type": "delivery_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order in transit for 6.5 days",
+      "detected_at": "2026-11-24T15:01:49.839652+00:00",
+      "order_date": "2026-10-10T03:01:49.837936+00:00",
+      "current_state": "in_transit",
+      "metadata": {
+        "platform_state": "in_transit",
+        "total_amount": 4600.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    },
+    {
+      "ledger_entry_id": "d59481a1aee59728",
+      "order_id": "ozon_order_000049",
+      "platform": "Ozon",
+      "shop_id": "shop_002",
+      "anomaly_type": "shipment_delayed",
+      "category": "timing",
+      "severity": "p1_hourly",
+      "description": "Order paid but not shipped for 49.5 days",
+      "detected_at": "2026-11-24T15:01:49.839664+00:00",
+      "order_date": "2026-10-06T03:01:49.837936+00:00",
+      "current_state": "paid",
+      "metadata": {
+        "platform_state": "confirmed",
+        "total_amount": 5000.0,
+        "currency": "RUB",
+        "reconciliation_status": "pending"
+      }
+    }
+  ]
 }
