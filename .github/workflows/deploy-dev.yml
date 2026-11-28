@@ -31,7 +31,7 @@ jobs:
           KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_DEV }}
         run: |
           mkdir -p $HOME/.kube
-          echo "$KUBECONFIG_CONTENT" | base64 -d > $HOME/.kube/config
+          echo "$KUBECONFIG_CONTENT" | base64 --decode --ignore-garbage > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
       - name: Validate Helm Chart
