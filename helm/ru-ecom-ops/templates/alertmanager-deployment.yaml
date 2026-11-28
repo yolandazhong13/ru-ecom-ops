@@ -52,31 +52,31 @@ data:
     - name: 'default'
       slack_configs:
       - channel: '{{ .Values.alertmanager.slack.channels.default }}'
-        title: '{{ .GroupLabels.alertname }}'
-        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        title: '{{ "{{" }} .GroupLabels.alertname {{ "}}" }}'
+        text: '{{ "{{" }} range .Alerts {{ "}}" }}{{ "{{" }} .Annotations.description {{ "}}" }}{{ "{{" }} end {{ "}}" }}'
         send_resolved: true
-        color: '{{ if eq .Status "firing" }}warning{{ else }}good{{ end }}'
+        color: '{{ "{{" }} if eq .Status "firing" {{ "}}" }}warning{{ "{{" }} else {{ "}}" }}good{{ "{{" }} end {{ "}}" }}'
 
     - name: 'critical'
       slack_configs:
       - channel: '{{ .Values.alertmanager.slack.channels.critical }}'
-        title: 'CRITICAL: {{ .GroupLabels.alertname }}'
-        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        title: 'CRITICAL: {{ "{{" }} .GroupLabels.alertname {{ "}}" }}'
+        text: '{{ "{{" }} range .Alerts {{ "}}" }}{{ "{{" }} .Annotations.description {{ "}}" }}{{ "{{" }} end {{ "}}" }}'
         send_resolved: true
         color: 'danger'
       {{- if .Values.alertmanager.pagerduty.enabled }}
       pagerduty_configs:
       - routing_key: '${PAGERDUTY_ROUTING_KEY}'
-        description: '{{ .GroupLabels.alertname }}'
+        description: '{{ "{{" }} .GroupLabels.alertname {{ "}}" }}'
         details:
-          firing: '{{ template "pagerduty.default.instances" .Alerts.Firing }}'
+          firing: '{{ "{{" }} template "pagerduty.default.instances" .Alerts.Firing {{ "}}" }}'
       {{- end }}
 
     - name: 'info'
       slack_configs:
       - channel: '{{ .Values.alertmanager.slack.channels.info }}'
-        title: 'Info: {{ .GroupLabels.alertname }}'
-        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        title: 'Info: {{ "{{" }} .GroupLabels.alertname {{ "}}" }}'
+        text: '{{ "{{" }} range .Alerts {{ "}}" }}{{ "{{" }} .Annotations.description {{ "}}" }}{{ "{{" }} end {{ "}}" }}'
         send_resolved: true
         color: 'good'
     {{- end }}
