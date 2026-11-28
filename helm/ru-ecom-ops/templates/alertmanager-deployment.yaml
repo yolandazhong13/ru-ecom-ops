@@ -99,7 +99,7 @@ data:
 
   slack.tmpl: |
     {{ define "slack.default.title" -}}
-    [{{ .Status | toUpper -}}
+    [{{ .Status | upper -}}
     {{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{- else }}:{{ .Alerts.Resolved | len }}{{- end }}
     ] {{ .CommonLabels.alertname }}
     {{- end }}
