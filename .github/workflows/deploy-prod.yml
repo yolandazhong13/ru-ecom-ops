@@ -45,17 +45,16 @@ jobs:
       - name: Check for hardcoded secrets
         run: |
           # Detect actual hardcoded values for secret-type keys.
-          # Exclude: template vars (${{ }}), K8s secretKeyRef blocks,
-          # and legitimate field names that contain "key"/"secret" as substrings.
+          # Character class [^|{$\s] excludes GitHub expressions, shell vars, YAML blocks.
+          # Also excludes comment lines and K8s secretKeyRef/valueFrom blocks.
           if grep -rE '^\s*(password|passwd|api_key|apikey|api_secret|access_token|auth_token|private_key)\s*:\s*[^|{$\s]' \
                helm/ru-ecom-ops/ --include="*.yaml" \
-             | grep -v '\${{' \
              | grep -v '^\s*#' \
              | grep -v 'secretKeyRef\|secretRef\|valueFrom'; then
-            echo "⚠️  Potential hardcoded secrets detected"
+            echo "Potential hardcoded secrets detected"
             exit 1
           fi
-          echo "✓ No hardcoded secrets found"
+          echo "No hardcoded secrets found"
 
   approval-check:
     runs-on: ubuntu-latest
