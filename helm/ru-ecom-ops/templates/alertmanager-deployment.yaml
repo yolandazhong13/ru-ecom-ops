@@ -30,21 +30,21 @@ data:
         - match:
             severity: critical
           receiver: 'critical'
-          group_wait: {{ .Values.alertmanager.routing.routes[0].groupWait }}
-          repeat_interval: {{ .Values.alertmanager.routing.routes[0].repeatInterval }}
+          group_wait: {{ (index .Values.alertmanager.routing.routes 0).groupWait }}
+          repeat_interval: {{ (index .Values.alertmanager.routing.routes 0).repeatInterval }}
 
         # Warning alerts - batched Slack notification
         - match:
             severity: warning
           receiver: 'default'
-          group_wait: {{ .Values.alertmanager.routing.routes[1].groupWait }}
-          repeat_interval: {{ .Values.alertmanager.routing.routes[1].repeatInterval }}
+          group_wait: {{ (index .Values.alertmanager.routing.routes 1).groupWait }}
+          repeat_interval: {{ (index .Values.alertmanager.routing.routes 1).repeatInterval }}
 
         # Info alerts - once per day
         - match:
             severity: info
           receiver: 'info'
-          repeat_interval: {{ .Values.alertmanager.routing.routes[2].repeatInterval }}
+          repeat_interval: {{ (index .Values.alertmanager.routing.routes 2).repeatInterval }}
 
     # Receivers: how to send alerts
     receivers:
